@@ -1,437 +1,363 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Muddy Paw Trading Co.</title>
+<title>Muddy Paw Trading Co. — Command Center</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><rect width='120' height='120' fill='%230d0a06'/><ellipse cx='60' cy='72' rx='28' ry='26' fill='%23C8922A'/><ellipse cx='35' cy='48' rx='10' ry='11' fill='%23C8922A'/><ellipse cx='52' cy='40' rx='10' ry='11' fill='%23C8922A'/><ellipse cx='70' cy='40' rx='10' ry='11' fill='%23C8922A'/><ellipse cx='87' cy='48' rx='10' ry='11' fill='%23C8922A'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --earth:#0d0a06;--earth-mid:#1a0e04;--earth-deep:#2C1A0A;
+  --gold:#C8922A;--gold-light:#E8A838;--gold-pale:#F5D98B;
+  --cream:#D4C4A0;--rust:#8B3A1A;--muted:#5A4030;
+  --faint:rgba(200,146,42,0.08);--border:rgba(200,146,42,0.15);
+  --border-hover:rgba(200,146,42,0.4);--green:#4caf79;--blue:#4a9eff;
+}
+html,body{width:100%;height:100%;background:var(--earth);color:var(--gold-pale);font-family:'Lora',serif;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 50% at 50% 20%,rgba(200,146,42,0.06) 0%,transparent 70%);pointer-events:none}
 
-  :root {
-    --earth:      #0d0a06;
-    --earth-mid:  #1a0e04;
-    --earth-deep: #2C1A0A;
-    --gold:       #C8922A;
-    --gold-light: #E8A838;
-    --gold-pale:  #F5D98B;
-    --cream:      #D4C4A0;
-    --rust:       #8B3A1A;
-    --muted:      #5A4030;
-    --border:     rgba(200,146,42,0.18);
-  }
+/* –– SCREENS –– */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;z-index:10;transition:opacity 0.3s,transform 0.3s;background:var(–earth)}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.98)}
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--earth);
-    color: var(--gold-pale);
-    font-family: 'Lora', serif;
-    overflow: hidden;
-  }
+/* –– PIN SCREEN –– */
+#pin-screen{align-items:center;justify-content:center;text-align:center;gap:0;padding:32px}
+.pin-paw{animation:floatPaw 4s ease-in-out infinite;filter:drop-shadow(0 8px 32px rgba(200,146,42,0.35));margin-bottom:16px}
+@keyframes floatPaw{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.pin-title{font-family:‘Playfair Display’,serif;font-weight:900;font-size:36px;color:var(–gold-pale);letter-spacing:-1px;line-height:1}
+.pin-title span{color:var(–gold)}
+.pin-sub{font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:4px;color:var(–muted);text-transform:uppercase;margin-top:6px;margin-bottom:28px}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:8px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(–muted);transition:all 0.15s}
+.pin-dot.filled{background:var(–gold);border-color:var(–gold)}
+.pin-error{font-family:‘DM Mono’,monospace;font-size:11px;color:#e05252;height:20px;margin-bottom:8px;transition:opacity 0.3s}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:220px;margin:0 auto}
+.key{background:rgba(44,26,10,0.6);border:1px solid var(–border);border-radius:10px;padding:16px 8px;color:var(–gold-pale);font-size:22px;font-family:‘Playfair Display’,serif;font-weight:700;cursor:pointer;transition:all 0.1s;-webkit-tap-highlight-color:transparent}
+.key:active,.key:hover{background:rgba(200,146,42,0.15);border-color:var(–border-hover)}
+.key.empty{background:transparent;border:none;cursor:default}
+.pin-reset{background:transparent;border:none;color:var(–muted);font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-decoration:underline;margin-top:16px}
+.pin-setup{width:100%;max-width:260px;margin-top:8px}
+.pin-setup input{width:100%;background:rgba(44,26,10,0.5);border:1px solid var(–border);border-radius:8px;color:var(–gold-pale);padding:12px;font-size:24px;letter-spacing:10px;text-align:center;outline:none;font-family:‘Lora’,serif;margin-bottom:10px}
+.pin-setup-btn{width:100%;background:linear-gradient(135deg,var(–gold),#A8721A);border:none;color:#1a0a00;padding:12px;border-radius:9px;cursor:pointer;font-family:‘DM Mono’,monospace;font-weight:600;font-size:12px;letter-spacing:2px;text-transform:uppercase}
 
-  /* ---- GRAIN OVERLAY ---- */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-    pointer-events: none;
-    opacity: 0.6;
-  }
+/* –– MAIN APP –– */
+#app-screen{display:flex;flex-direction:column}
 
-  /* ---- AMBIENT GLOW ---- */
-  body::after {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse 70% 50% at 50% 30%, rgba(200,146,42,0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 30% at 20% 80%, rgba(139,58,26,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 80% 70%, rgba(200,146,42,0.04) 0%, transparent 60%);
-    pointer-events: none;
-  }
+/* HEADER */
+.app-header{background:rgba(44,26,10,0.97);border-bottom:1px solid var(–border);flex-shrink:0;backdrop-filter:blur(16px)}
+.header-tagline{background:rgba(200,146,42,0.06);border-bottom:1px solid rgba(200,146,42,0.08);padding:4px 20px;text-align:center;font-family:‘Lora’,serif;font-style:italic;font-size:11px;color:var(–muted)}
+.header-inner{max-width:960px;margin:0 auto;padding:12px 16px 10px}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-text .brand{font-family:‘Playfair Display’,serif;font-weight:900;font-size:18px;color:var(–gold-pale);letter-spacing:-0.5px;line-height:1}
+.logo-text .co{font-family:‘DM Mono’,monospace;font-size:8px;letter-spacing:4px;color:var(–muted);text-transform:uppercase;margin-top:3px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-add{background:linear-gradient(135deg,var(–gold),#A8721A);border:none;color:#1a0a00;padding:7px 14px;border-radius:7px;cursor:pointer;font-family:‘DM Mono’,monospace;font-weight:600;font-size:11px;letter-spacing:1px;white-space:nowrap}
+.btn-lock{background:transparent;border:1px solid rgba(200,146,42,0.15);color:var(–muted);padding:7px 10px;border-radius:7px;cursor:pointer;font-family:‘DM Mono’,monospace;font-size:11px}
+.nav{display:flex;gap:4px;margin-top:10px;border-top:1px solid rgba(200,146,42,0.08);padding-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{background:transparent;border:1px solid transparent;color:var(–muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;transition:all 0.12s;-webkit-tap-highlight-color:transparent}
+.nav-btn.active{background:rgba(200,146,42,0.12);border-color:rgba(200,146,42,0.3);color:var(–gold)}
 
-  /* ---- LAYOUT ---- */
-  .stage {
-    position: relative; z-index: 1;
-    width: 100vw; height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    padding: 40px 24px;
-  }
+/* CONTENT */
+.app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+.app-content-inner{max-width:960px;margin:0 auto}
 
-  /* ---- RULE LINES ---- */
-  .rule {
-    width: 1px;
-    height: 60px;
-    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
-    opacity: 0.3;
-    margin: 12px 0;
-    animation: pulseRule 3s ease-in-out infinite;
-  }
+/* –– PANELS –– */
+.panel{display:none}
+.panel.active{display:block}
 
-  @keyframes pulseRule {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.5; }
-  }
+/* –– SHARED COMPONENTS –– */
+.section-label{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–muted);letter-spacing:3px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(–faint);margin-bottom:12px}
+.card{background:rgba(44,26,10,0.4);border:1px solid var(–border);border-radius:10px;padding:14px 16px;margin-bottom:8px;position:relative;overflow:hidden}
+.card.selected{background:rgba(200,146,42,0.07);border-color:rgba(200,146,42,0.4)}
+.card-title{font-family:‘Playfair Display’,serif;font-weight:700;color:var(–gold-pale);font-size:14px;line-height:1.2;margin-bottom:3px}
+.card-meta{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–muted);letter-spacing:0.5px}
+.badge{display:inline-block;border-radius:20px;padding:2px 9px;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:0.5px}
+.stat-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.stat-card{flex:1;min-width:100px;background:rgba(44,26,10,0.5);border:1px solid var(–border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::after{content:’’;position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.gold::after{background:linear-gradient(90deg,var(–gold),transparent)}
+.stat-card.blue::after{background:linear-gradient(90deg,var(–blue),transparent)}
+.stat-card.green::after{background:linear-gradient(90deg,var(–green),transparent)}
+.stat-lbl{font-family:‘DM Mono’,monospace;font-size:8px;color:var(–muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.stat-val{font-family:‘Playfair Display’,serif;font-size:22px;font-weight:900;line-height:1}
+.btn{background:transparent;border:1px solid var(–border);color:var(–muted);padding:7px 14px;border-radius:7px;cursor:pointer;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.btn:hover,.btn:active{border-color:var(–border-hover);color:var(–gold)}
+.btn.primary{background:linear-gradient(135deg,var(–gold),#A8721A);border:none;color:#1a0a00;font-weight:600}
+.btn.danger{border-color:rgba(224,82,82,0.2);color:#e05252}
+.input{width:100%;background:rgba(44,26,10,0.5);border:1px solid var(–border);border-radius:7px;color:var(–gold-pale);padding:8px 12px;font-size:13px;outline:none;font-family:‘Lora’,serif}
+.input:focus{border-color:var(–border-hover)}
+.label{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:block}
+.field{margin-bottom:12px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.progress-bar{background:rgba(200,146,42,0.08);border-radius:4px;height:5px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:4px;transition:width 0.6s}
+.copy-btn{background:rgba(200,146,42,0.1);border:1px solid var(–border);color:var(–gold);padding:3px 10px;border-radius:5px;cursor:pointer;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1px;white-space:nowrap}
+.copy-btn:active{background:rgba(200,146,42,0.25)}
 
-  /* ---- PAW MARK ---- */
-  .paw-wrap {
-    animation: floatPaw 4s ease-in-out infinite;
-    filter: drop-shadow(0 8px 32px rgba(200,146,42,0.35));
-    margin-bottom: 4px;
-  }
+/* –– MODAL –– */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100;display:flex;align-items:center;justify-content:center;padding:12px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#100800;border:1px solid var(–border);border-radius:14px;width:100%;max-width:580px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.6)}
+.modal-header{padding:16px 18px 12px;border-bottom:1px solid var(–faint);background:rgba(44,26,10,0.5);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;border-radius:14px 14px 0 0}
+.modal-title{font-family:‘Playfair Display’,serif;font-size:16px;font-weight:800;color:var(–gold-pale)}
+.modal-close{background:none;border:none;color:var(–muted);font-size:20px;cursor:pointer;line-height:1}
+.modal-body{flex:1;overflow-y:auto;padding:16px 18px;-webkit-overflow-scrolling:touch}
+.modal-footer{padding:12px 18px;border-top:1px solid var(–faint);display:flex;gap:8px;flex-shrink:0}
 
-  @keyframes floatPaw {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
-  }
+/* –– COPY AREA –– */
+.copy-area{background:rgba(44,26,10,0.4);border:1px solid var(–border);border-radius:9px;padding:14px;position:relative;margin-bottom:10px}
+.copy-area-label{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.copy-area-text{font-family:‘Lora’,serif;font-size:13px;color:var(–cream);line-height:1.8;white-space:pre-wrap;padding-right:48px}
+.copy-area .copy-btn{position:absolute;top:10px;right:10px}
 
-  /* ---- WORDMARK ---- */
-  .wordmark {
-    font-family: 'Playfair Display', serif;
-    font-weight: 900;
-    font-size: clamp(42px, 7vw, 80px);
-    color: var(--gold-pale);
-    letter-spacing: -2px;
-    line-height: 1;
-    text-align: center;
-    animation: fadeUp 0.8s ease both;
-  }
+/* –– PLATFORM TABS –– */
+.plat-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:10px 16px 0;flex-shrink:0;background:rgba(20,10,0,0.3)}
+.plat-tab{background:transparent;border:1px solid rgba(200,146,42,0.08);border-radius:20px;padding:5px 12px;cursor:pointer;font-family:‘DM Mono’,monospace;font-size:10px;color:var(–muted);transition:all 0.1s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.plat-tab.active{background:rgba(200,146,42,0.15);border-color:rgba(200,146,42,0.4);color:var(–gold)}
 
-  .wordmark span { color: var(--gold); }
+/* –– LISTING BOARD –– */
+.board-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.board-col{background:rgba(44,26,10,0.4);border:1px solid var(–border);border-radius:12px;overflow:hidden}
+.board-col-header{background:rgba(44,26,10,0.7);padding:12px 14px;border-bottom:1px solid var(–faint);display:flex;align-items:center;justify-content:space-between}
+.board-col-title{font-family:‘Playfair Display’,serif;font-weight:700;color:var(–gold-pale);font-size:13px}
+.board-col-body{padding:10px 14px}
+.board-item{padding:8px 0;border-bottom:1px solid var(–faint)}
+.board-item:last-child{border-bottom:none}
+.board-item-name{font-family:‘Lora’,serif;font-size:12px;color:var(–cream);line-height:1.3;margin-bottom:5px}
+.board-item-controls{display:flex;gap:5px;align-items:center}
+.status-select{background:rgba(44,26,10,0.6);border:1px solid var(–border);border-radius:5px;color:var(–gold-pale);padding:3px 6px;font-family:‘DM Mono’,monospace;font-size:9px;cursor:pointer;flex:1;outline:none}
+.plat-open-btn{display:block;text-align:center;background:rgba(200,146,42,0.08);border:1px solid var(–border);color:var(–gold);padding:6px;font-family:‘DM Mono’,monospace;font-size:9px;border-radius:6px;text-decoration:none;margin-top:10px;letter-spacing:1px}
 
-  .subtitle {
-    font-family: 'DM Mono', monospace;
-    font-size: clamp(10px, 1.2vw, 13px);
-    letter-spacing: 6px;
-    color: var(--muted);
-    text-transform: uppercase;
-    text-align: center;
-    margin-top: 8px;
-    animation: fadeUp 0.8s 0.1s ease both;
-  }
+/* –– PLATFORM CARD –– */
+.plat-card{cursor:pointer;transition:all 0.12s;-webkit-tap-highlight-color:transparent}
+.plat-card:hover,.plat-card:active{border-color:var(–border-hover)}
+.plat-detail{background:rgba(44,26,10,0.5);border:1px solid var(–border);border-radius:12px;padding:16px;margin-top:12px}
+.cred-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(–faint)}
+.cred-row:last-child{border-bottom:none}
+.cred-label{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.cred-val{font-family:‘DM Mono’,monospace;font-size:12px;color:var(–cream)}
 
-  .tagline {
-    font-family: 'Lora', serif;
-    font-style: italic;
-    font-size: clamp(13px, 1.4vw, 16px);
-    color: var(--cream);
-    opacity: 0.5;
-    text-align: center;
-    animation: fadeUp 0.8s 0.2s ease both;
-  }
+/* –– ADD ITEM FORM –– */
+.plat-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.plat-check{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(44,26,10,0.3);border:1px solid var(–border);border-radius:8px;cursor:pointer;transition:all 0.12s;-webkit-tap-highlight-color:transparent}
+.plat-check.checked{background:rgba(200,146,42,0.08);border-color:rgba(200,146,42,0.4)}
+.plat-check-box{width:16px;height:16px;border-radius:4px;border:2px solid var(–muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.12s}
+.plat-check.checked .plat-check-box{background:var(–gold);border-color:var(–gold)}
+.plat-check-name{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–muted)}
+.plat-check.checked .plat-check-name{color:var(–gold-pale)}
+.suggested-tag{font-family:‘DM Mono’,monospace;font-size:8px;color:var(–gold);letter-spacing:1px}
 
-  /* ---- LAUNCH BUTTON ---- */
-  .launch-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: transparent;
-    border: 1px solid rgba(200,146,42,0.35);
-    border-radius: 6px;
-    padding: 18px 40px;
-    cursor: pointer;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--gold);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    animation: fadeUp 0.8s 0.4s ease both;
-    text-decoration: none;
-  }
+/* –– BRAND PANEL –– */
+.brand-logo-preview{background:var(–earth-deep);border-radius:10px;padding:32px;text-align:center;margin-bottom:16px;border:1px solid var(–border)}
+.brand-wordmark{font-family:‘Playfair Display’,serif;font-weight:900;font-size:36px;color:var(–gold-pale);letter-spacing:-1px;margin-top:12px}
+.brand-wordmark span{color:var(–gold)}
+.brand-sub{font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:5px;color:var(–muted);text-transform:uppercase;margin-top:6px}
+.brand-tagline{font-family:‘Lora’,serif;font-style:italic;color:var(–cream);opacity:0.6;margin-top:10px;font-size:14px}
+.palette{display:flex;gap:0;border-radius:8px;overflow:hidden;height:60px;margin-bottom:16px}
+.swatch{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:5px}
+.swatch-hex{font-family:‘DM Mono’,monospace;font-size:8px;opacity:0.7}
+.copy-block-brand{background:rgba(44,26,10,0.4);border:1px solid var(–border);border-radius:8px;padding:14px;margin-bottom:10px;position:relative}
+.copy-block-label{font-family:‘DM Mono’,monospace;font-size:9px;color:var(–gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.copy-block-text{font-family:‘Lora’,serif;font-size:13px;color:var(–cream);line-height:1.7;padding-right:50px}
+.copy-block-brand .copy-btn{position:absolute;top:12px;right:12px}
 
-  .launch-btn::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(200,146,42,0.1), rgba(200,146,42,0.03));
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+/* –– FINANCES –– */
+.fin-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+.fin-table th{background:rgba(44,26,10,0.5);border-bottom:2px solid var(–border);padding:9px 12px;text-align:left;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(–muted)}
+.fin-table td{padding:9px 12px;border-bottom:1px solid var(–faint);font-family:‘Lora’,serif;color:var(–cream)}
+.fin-table td:first-child{font-family:‘DM Mono’,monospace;font-size:11px;color:var(–gold-pale)}
+.fin-table tr:last-child td{border-bottom:none}
 
-  .launch-btn::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: -100%; right: 100%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    transition: left 0.4s ease, right 0.4s ease;
-  }
+/* –– SCAN LINE –– */
+.scan-line{position:fixed;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(200,146,42,0.2) 50%,transparent 100%);animation:scan 10s linear infinite;pointer-events:none;z-index:1}
+@keyframes scan{0%{top:-2px;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100vh;opacity:0}}
 
-  .launch-btn:hover {
-    border-color: rgba(200,146,42,0.7);
-    color: var(--gold-pale);
-    box-shadow: 0 0 40px rgba(200,146,42,0.15), inset 0 0 30px rgba(200,146,42,0.04);
-    transform: translateY(-2px);
-  }
+/* –– ANIMATIONS –– */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp 0.3s ease both}
 
-  .launch-btn:hover::before { opacity: 1; }
-  .launch-btn:hover::after { left: 0; right: 0; }
+/* –– SCROLLBAR –– */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(200,146,42,0.2);border-radius:2px}
 
-  .launch-btn:active { transform: translateY(0); }
-
-  .btn-icon {
-    font-size: 20px;
-    transition: transform 0.3s;
-  }
-
-  .launch-btn:hover .btn-icon { transform: scale(1.15); }
-
-  /* ---- QUICK LINKS ---- */
-  .quick-links {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    animation: fadeUp 0.8s 0.5s ease both;
-    margin-top: 4px;
-  }
-
-  .quick-link {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: rgba(44,26,10,0.4);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 14px;
-    text-decoration: none;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    transition: all 0.2s;
-  }
-
-  .quick-link:hover {
-    background: rgba(200,146,42,0.08);
-    border-color: rgba(200,146,42,0.3);
-    color: var(--gold);
-    transform: translateY(-1px);
-  }
-
-  /* ---- STATS ROW ---- */
-  .stats-row {
-    display: flex;
-    gap: 32px;
-    animation: fadeUp 0.8s 0.6s ease both;
-  }
-
-  .stat {
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .stat-lbl {
-    font-family: 'DM Mono', monospace;
-    font-size: 8px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  .stat-div {
-    width: 1px;
-    height: 32px;
-    background: var(--border);
-    align-self: center;
-  }
-
-< truncated lines 253-294 >
-    position: fixed;
-    left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(200,146,42,0.15) 30%, rgba(200,146,42,0.3) 50%, rgba(200,146,42,0.15) 70%, transparent 100%);
-    animation: scan 8s linear infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @keyframes scan {
-    0%   { top: -2px; opacity: 0; }
-    5%   { opacity: 1; }
-    95%  { opacity: 1; }
-    100% { top: 100vh; opacity: 0; }
-  }
+/* –– RESPONSIVE –– */
+@media(max-width:600px){
+.two-col{grid-template-columns:1fr}
+.stat-grid .stat-card{min-width:calc(50% - 4px)}
+.board-grid{grid-template-columns:1fr}
+.plat-check-grid{grid-template-columns:1fr}
+}
 </style>
+
 </head>
 <body>
-
 <div class="scan-line"></div>
-<div class="corner corner-tl"></div>
-<div class="corner corner-tr"></div>
-<div class="corner corner-bl"></div>
-<div class="corner corner-br"></div>
 
-<div class="stage">
+<!-- ============================================================ -->
 
-  <!-- Paw mark -->
-  <div class="paw-wrap">
-    <svg viewBox="0 0 120 120" width="72" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- PIN SCREEN -->
+
+<!-- ============================================================ -->
+
+<div class="screen" id="pin-screen">
+  <div class="pin-paw">
+    <svg viewBox="0 0 120 120" width="64" height="64" fill="none">
       <ellipse cx="60" cy="72" rx="28" ry="26" fill="#C8922A"/>
       <ellipse cx="35" cy="48" rx="10" ry="11" fill="#C8922A"/>
       <ellipse cx="52" cy="40" rx="10" ry="11" fill="#C8922A"/>
       <ellipse cx="70" cy="40" rx="10" ry="11" fill="#C8922A"/>
       <ellipse cx="87" cy="48" rx="10" ry="11" fill="#C8922A"/>
-      <ellipse cx="52" cy="64" rx="10" ry="8" fill="#E8A838" opacity="0.35"/>
-      <path d="M42 72 Q60 68 78 72" stroke="#8B5E1A" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-      <path d="M45 79 Q60 75 75 79" stroke="#8B5E1A" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+      <ellipse cx="52" cy="64" rx="10" ry="8" fill="#E8A838" opacity="0.3"/>
     </svg>
   </div>
+  <div class="pin-title">Muddy <span>Paw</span></div>
+  <div class="pin-sub">Command Center</div>
 
-  <div class="rule"></div>
-
-  <!-- Wordmark -->
-  <div class="wordmark">Muddy <span>Paw</span></div>
-  <div class="subtitle">Trading Company · Command Center</div>
-
-  <div class="rule"></div>
-
-  <!-- Tagline -->
-  <div class="tagline">Found it. Fixed it. Moving on.</div>
-
-  <!-- Spacer -->
-  <div style="height:28px"></div>
-
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-num">13</div>
-      <div class="stat-lbl">Items</div>
+  <div id="pin-entry">
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
     </div>
-    <div class="stat-div"></div>
-    <div class="stat">
-      <div class="stat-num">5</div>
-      <div class="stat-lbl">Platforms</div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="keypad">
+      <button class="key" onclick="keyPress('1')">1</button>
+      <button class="key" onclick="keyPress('2')">2</button>
+      <button class="key" onclick="keyPress('3')">3</button>
+      <button class="key" onclick="keyPress('4')">4</button>
+      <button class="key" onclick="keyPress('5')">5</button>
+      <button class="key" onclick="keyPress('6')">6</button>
+      <button class="key" onclick="keyPress('7')">7</button>
+      <button class="key" onclick="keyPress('8')">8</button>
+      <button class="key" onclick="keyPress('9')">9</button>
+      <button class="key empty"></button>
+      <button class="key" onclick="keyPress('0')">0</button>
+      <button class="key" onclick="keyPress('back')" style="font-size:16px">⌫</button>
     </div>
-    <div class="stat-div"></div>
-    <div class="stat">
-      <div class="stat-num">$14k+</div>
-      <div class="stat-lbl">Potential</div>
-    </div>
+    <button class="pin-reset" onclick="showSetPin()">Set / Reset PIN</button>
   </div>
 
-  <div style="height:28px"></div>
-
-  <!-- MAIN LAUNCH BUTTON -->
-  <a class="launch-btn" href="javascript:void(0)" onclick="launchHub()">
-    <span class="btn-icon">
-      <svg viewBox="0 0 120 120" width="22" height="22" fill="none">
-        <ellipse cx="60" cy="72" rx="28" ry="26" fill="currentColor"/>
-        <ellipse cx="35" cy="48" rx="10" ry="11" fill="currentColor"/>
-        <ellipse cx="52" cy="40" rx="10" ry="11" fill="currentColor"/>
-        <ellipse cx="70" cy="40" rx="10" ry="11" fill="currentColor"/>
-        <ellipse cx="87" cy="48" rx="10" ry="11" fill="currentColor"/>
-      </svg>
-    </span>
-    Open Command Center
-  </a>
-
-  <div style="height:20px"></div>
-
-  <!-- Quick links -->
-  <div class="quick-links">
-    <a class="quick-link" href="https://www.ebay.com/sh/ovw" target="_blank">🛒 eBay</a>
-    <a class="quick-link" href="https://www.facebook.com/marketplace/you/selling" target="_blank">📘 Facebook</a>
-    <a class="quick-link" href="https://accounts.craigslist.org" target="_blank">📋 Craigslist</a>
-    <a class="quick-link" href="https://probrewer.com/classifieds" target="_blank">🍺 ProBrewer</a>
-    <a class="quick-link" href="https://machinio.com/dashboard" target="_blank">⚙️ Machinio</a>
-    <a class="quick-link" href="https://www.govdeals.com" target="_blank">🏛 GovDeals</a>
+  <div id="pin-setup-area" style="display:none" class="pin-setup">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Set New PIN</div>
+    <input type="password" id="new-pin-1" maxlength="4" placeholder="New PIN" inputmode="numeric" pattern="[0-9]*">
+    <input type="password" id="new-pin-2" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" pattern="[0-9]*" style="margin-top:8px">
+    <div class="pin-error" id="setup-error"></div>
+    <button class="pin-setup-btn" onclick="confirmSetPin()">Set PIN & Enter</button>
+    <button class="pin-reset" onclick="showKeypad()" style="margin-top:8px">Cancel</button>
   </div>
-
 </div>
 
-<div class="footer">Goldendale, WA · (509) 906-2938 · muddypawtrading@gmail.com</div>
+<!-- ============================================================ -->
 
-<script>
-  // The hub iframe overlay
-  function launchHub() {
-    // Create fullscreen overlay
-    const overlay = document.createElement('div');
-    overlay.id = 'hub-overlay';
-    overlay.style.cssText = `
-      position: fixed; inset: 0; z-index: 1000;
-      background: #0d0a06;
-      display: flex; flex-direction: column;
-      animation: overlayIn 0.3s ease;
-    `;
+<!-- MAIN APP -->
 
-    // Top bar with close
-    const bar = document.createElement('div');
-    bar.style.cssText = `
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px;
-      background: rgba(44,26,10,0.95);
-      border-bottom: 1px solid rgba(200,146,42,0.15);
-      flex-shrink: 0;
-    `;
+<!-- ============================================================ -->
 
-    const barLeft = document.createElement('div');
-    barLeft.style.cssText = `display:flex; align-items:center; gap:10px;`;
-    barLeft.innerHTML = `
-      <svg viewBox="0 0 120 120" width="20" height="20" fill="none">
-        <ellipse cx="60" cy="72" rx="28" ry="26" fill="#C8922A"/>
-        <ellipse cx="35" cy="48" rx="10" ry="11" fill="#C8922A"/>
-        <ellipse cx="52" cy="40" rx="10" ry="11" fill="#C8922A"/>
-        <ellipse cx="70" cy="40" rx="10" ry="11" fill="#C8922A"/>
-        <ellipse cx="87" cy="48" rx="10" ry="11" fill="#C8922A"/>
-      </svg>
-      <span style="font-family:'DM Mono',monospace; font-size:11px; letter-spacing:3px; color:#C8922A; text-transform:uppercase;">Muddy Paw Command Center</span>
-    `;
+<div class="screen hidden" id="app-screen">
+  <div class="app-header">
+    <div class="header-tagline">Found it. Fixed it. Moving on.</div>
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="logo">
+          <svg viewBox="0 0 120 120" width="34" height="34" fill="none">
+            <ellipse cx="60" cy="72" rx="28" ry="26" fill="#C8922A"/>
+            <ellipse cx="35" cy="48" rx="10" ry="11" fill="#C8922A"/>
+            <ellipse cx="52" cy="40" rx="10" ry="11" fill="#C8922A"/>
+            <ellipse cx="70" cy="40" rx="10" ry="11" fill="#C8922A"/>
+            <ellipse cx="87" cy="48" rx="10" ry="11" fill="#C8922A"/>
+          </svg>
+          <div class="logo-text">
+            <div class="brand">Muddy Paw</div>
+            <div class="co">Trading Company</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-add" onclick="openAddItem()">+ Add Item</button>
+          <button class="btn-lock" onclick="lock()">🔒</button>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="nav-btn active" onclick="showPanel('dashboard',this)">📊 Dashboard</button>
+        <button class="nav-btn" onclick="showPanel('inventory',this)">📦 Inventory</button>
+        <button class="nav-btn" onclick="showPanel('listings',this)">📋 Listings</button>
+        <button class="nav-btn" onclick="showPanel('platforms',this)">🌐 Platforms</button>
+        <button class="nav-btn" onclick="showPanel('finances',this)">💰 Finances</button>
+        <button class="nav-btn" onclick="showPanel('brand',this)">🐾 Brand</button>
+      </div>
+    </div>
+  </div>
 
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕ Close';
-    closeBtn.style.cssText = `
-      background: transparent;
-      border: 1px solid rgba(200,146,42,0.2);
-      color: #5A4030;
-      padding: 5px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    `;
-    closeBtn.onmouseover = () => { closeBtn.style.color = '#C8922A'; closeBtn.style.borderColor = 'rgba(200,146,42,0.5)'; };
-    closeBtn.onmouseout = () => { closeBtn.style.color = '#5A4030'; closeBtn.style.borderColor = 'rgba(200,146,42,0.2)'; };
-    closeBtn.onclick = () => {
-      overlay.style.animation = 'overlayOut 0.25s ease forwards';
-      setTimeout(() => overlay.remove(), 250);
-    };
+  <div class="app-content">
+    <div class="app-content-inner">
 
-    bar.appendChild(barLeft);
-    bar.appendChild(closeBtn);
+```
+  <!-- DASHBOARD -->
+  <div class="panel active" id="panel-dashboard">
+    <div class="stat-grid" id="dash-stats"></div>
+    <div class="section-label">Lot Recovery — LOT-001 GovDeals Tri-Cities</div>
+    <div id="lot-bar-container"></div>
+    <div class="section-label" style="margin-top:16px">Top Items by Value</div>
+    <div id="dash-top-items"></div>
+    <div class="section-label" style="margin-top:16px">Needs Attention</div>
+    <div id="dash-attention"></div>
+  </div>
 
-    // Message area — instructions since hub is a React artifact
-    const content = document.createElement('div');
-    content.style.cssText = `
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 24px;
-      text-align: center;
-      gap: 20px;
-    `;
+  <!-- INVENTORY -->
+  <div class="panel" id="panel-inventory">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input class="input" id="inv-search" placeholder="Search items..." style="flex:1;min-width:140px" oninput="renderInventory()">
+      <select class="input" id="inv-filter" style="width:auto" onchange="renderInventory()">
+        <option value="All">All Status</option>
+        <option>In Inventory</option>
+        <option>Listed</option>
+        <option>Sold</option>
+        <option>Scrapped</option>
+      </select>
+    </div>
+    <div id="inv-list"></div>
+  </div>
 
-    content.innerHTML = `
-      <svg viewBox="0 0 120 120" width="56" height="56" fill="none">
+  <!-- LISTINGS BOARD -->
+  <div class="panel" id="panel-listings">
+    <div class="board-grid" id="listing-board"></div>
+  </div>
+
+  <!-- PLATFORMS -->
+  <div class="panel" id="panel-platforms">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:var(--gold-pale)">Platforms</div>
+      <button class="btn primary" onclick="openAddPlatform()">+ Add</button>
+    </div>
+    <div id="plat-list"></div>
+    <div id="plat-detail-area"></div>
+  </div>
+
+  <!-- FINANCES -->
+  <div class="panel" id="panel-finances">
+    <div class="stat-grid" id="fin-stats"></div>
+    <div class="section-label">Lot P&amp;L</div>
+    <table class="fin-table">
+      <thead><tr><th>Lot</th><th>Paid</th><th>Trip</th><th>Total In</th><th>Recovered</th><th>P&L</th></tr></thead>
+      <tbody id="fin-lots"></tbody>
+    </table>
+    <div class="section-label" style="margin-top:16px">Item Ledger</div>
+    <table class="fin-table">
+      <thead><tr><th>Item</th><th>Buy</th><th>List</th><th>Sale</th><th>Profit</th><th>Days In</th></tr></thead>
+      <tbody id="fin-items"></tbody>
+    </table>
+  </div>
+
+  <!-- BRAND -->
+  <div class="panel" id="panel-brand">
+    <div class="brand-logo-preview">
+      <svg viewBox="0 0 120 120" width="64" height="64" fill="none">
         <ellipse cx="60" cy="72" rx="28" ry="26" fill="#C8922A"/>
         <ellipse cx="35" cy="48" rx="10" ry="11" fill="#C8922A"/>
         <ellipse cx="52" cy="40" rx="10" ry="11" fill="#C8922A"/>
@@ -439,67 +365,1105 @@
         <ellipse cx="87" cy="48" rx="10" ry="11" fill="#C8922A"/>
         <ellipse cx="52" cy="64" rx="10" ry="8" fill="#E8A838" opacity="0.35"/>
       </svg>
-      <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:#F5D98B; letter-spacing:-0.5px;">Command Center</div>
-      <div style="font-family:'Lora',serif; font-style:italic; font-size:15px; color:#7A5030; max-width:420px; line-height:1.7;">
-        Open the Hub artifact from your Claude conversation to access the full Command Center with PIN lock, inventory, platforms, and listing board.
-      </div>
+      <div class="brand-wordmark">Muddy <span>Paw</span></div>
+      <div class="brand-sub">Trading Company</div>
+      <div class="brand-tagline">Found it. Fixed it. Moving on.</div>
+    </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:480px; width:100%; margin-top:8px;">
-        ${[
-          ['🛒','eBay','https://signin.ebay.com'],
-          ['📘','Facebook','https://facebook.com'],
-          ['📋','Craigslist','https://accounts.craigslist.org'],
-          ['🍺','ProBrewer','https://probrewer.com/login'],
-          ['⚙️','Machinio','https://machinio.com/login'],
-          ['🏛','GovDeals','https://www.govdeals.com/login'],
-        ].map(([icon,name,url]) => `
-          <a href="${url}" target="_blank" style="
-            display:flex; align-items:center; gap:10px;
-            background:rgba(44,26,10,0.5);
-            border:1px solid rgba(200,146,42,0.15);
-            border-radius:8px; padding:12px 16px;
-            text-decoration:none; color:#D4C4A0;
-            font-family:'DM Mono',monospace; font-size:11px;
-            letter-spacing:1px; text-transform:uppercase;
-            transition:all 0.2s;
-          "
-          onmouseover="this.style.borderColor='rgba(200,146,42,0.4)';this.style.color='#F5D98B'"
-          onmouseout="this.style.borderColor='rgba(200,146,42,0.15)';this.style.color='#D4C4A0'"
-          >
-            <span style="font-size:16px">${icon}</span> ${name}
-          </a>
-        `).join('')}
-      </div>
+    <div class="section-label">Color Palette</div>
+    <div class="palette">
+      <div class="swatch" style="background:#0d0a06"><div class="swatch-hex" style="color:#C8922A">#0d0a06</div></div>
+      <div class="swatch" style="background:#2C1A0A"><div class="swatch-hex" style="color:#C8922A">#2C1A0A</div></div>
+      <div class="swatch" style="background:#C8922A"><div class="swatch-hex" style="color:#1a0a00">#C8922A</div></div>
+      <div class="swatch" style="background:#E8A838"><div class="swatch-hex" style="color:#1a0a00">#E8A838</div></div>
+      <div class="swatch" style="background:#F5D98B"><div class="swatch-hex" style="color:#4A2E12">#F5D98B</div></div>
+      <div class="swatch" style="background:#8B3A1A"><div class="swatch-hex" style="color:#F5D98B">#8B3A1A</div></div>
+      <div class="swatch" style="background:#D4C4A0;border:1px solid #aaa"><div class="swatch-hex" style="color:#4A2E12">#D4C4A0</div></div>
+    </div>
 
-      <div style="margin-top:12px; font-family:'DM Mono',monospace; font-size:10px; color:#3A2818; letter-spacing:1px;">
-        (509) 906-2938 · muddypawtrading@gmail.com
-      </div>
-    `;
+    <div class="section-label">Ready-to-Use Copy</div>
+    <div id="brand-copy-blocks"></div>
+  </div>
 
-    overlay.appendChild(bar);
-    overlay.appendChild(content);
-    document.body.appendChild(overlay);
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+
+<!-- MODALS -->
+
+<!-- ============================================================ -->
+
+<!-- Add Item Modal -->
+
+<div class="modal-overlay" id="modal-add-item">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Item</div>
+      <button class="modal-close" onclick="closeModal('modal-add-item')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="two-col">
+        <div class="field" style="grid-column:1/-1">
+          <label class="label">Item Name *</label>
+          <input class="input" id="ai-name" placeholder="What are you selling?">
+        </div>
+        <div class="field">
+          <label class="label">Category</label>
+          <select class="input" id="ai-cat" onchange="updateSuggestedPlats()">
+            <option>Industrial/Equipment</option>
+            <option>Brewing/Distilling</option>
+            <option>Furniture</option>
+            <option>Tools</option>
+            <option>Pottery/Art</option>
+            <option>Produce/Food</option>
+            <option>General Resale</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label">Condition</label>
+          <select class="input" id="ai-cond">
+            <option>New/Unused</option>
+            <option>Good — Normal Wear</option>
+            <option>Fair</option>
+            <option>For Parts</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label">Buy Price ($)</label>
+          <input class="input" id="ai-buy" type="number" placeholder="0.00">
+        </div>
+        <div class="field">
+          <label class="label">List Price ($)</label>
+          <input class="input" id="ai-list" type="number" placeholder="0.00">
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label class="label">Source</label>
+          <input class="input" id="ai-source" placeholder="GovDeals, thrift, private sale...">
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label class="label">Notes / Key Selling Points</label>
+          <textarea class="input" id="ai-notes" rows="3" placeholder="Specs, condition details, what's included..."></textarea>
+        </div>
+      </div>
+      <label class="label">Push to Platforms</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn" style="font-size:9px;padding:4px 10px" onclick="checkAllPlats(true)">All</button>
+        <button class="btn" style="font-size:9px;padding:4px 10px" onclick="checkAllPlats(false)">None</button>
+      </div>
+      <div class="plat-check-grid" id="plat-check-grid"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:6px">★ Suggested for selected category</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-item')">Cancel</button>
+      <button class="btn primary" style="flex:1" id="ai-submit" onclick="submitAddItem()">Add Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Listing Copy Modal -->
+
+<div class="modal-overlay" id="modal-listing">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="listing-modal-title">Listing Pack</div>
+        <div style="font-family:'Lora',serif;font-style:italic;font-size:11px;color:var(--muted);margin-top:2px" id="listing-modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-listing')">×</button>
+    </div>
+    <div class="plat-tabs" id="listing-tabs"></div>
+    <div class="modal-body" id="listing-body"></div>
+    <div class="modal-footer">
+      <button class="btn primary" style="flex:1" id="listing-copy-btn" onclick="copyActiveListing()">Copy Listing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Platform Edit Modal -->
+
+<div class="modal-overlay" id="modal-plat-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="plat-edit-title">Edit Platform</div>
+      <button class="modal-close" onclick="closeModal('modal-plat-edit')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="two-col">
+        <div class="field"><label class="label">Platform Name</label><input class="input" id="pe-name"></div>
+        <div class="field"><label class="label">Icon (emoji)</label><input class="input" id="pe-icon" style="font-size:20px"></div>
+        <div class="field"><label class="label">Username / Email</label><input class="input" id="pe-user"></div>
+        <div class="field"><label class="label">Password</label><input class="input" id="pe-pass" type="password"></div>
+        <div class="field"><label class="label">Dashboard URL</label><input class="input" id="pe-url"></div>
+        <div class="field"><label class="label">Login URL</label><input class="input" id="pe-login"></div>
+        <div class="field" style="grid-column:1/-1"><label class="label">Notes</label><textarea class="input" id="pe-notes" rows="3"></textarea></div>
+        <div class="field" style="display:flex;gap:10px;align-items:center">
+          <label class="label" style="margin:0">Active</label>
+          <input type="checkbox" id="pe-active" style="width:16px;height:16px;accent-color:var(--gold)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn danger" id="pe-delete" onclick="deletePlatform()">Delete</button>
+      <button class="btn" onclick="closeModal('modal-plat-edit')">Cancel</button>
+      <button class="btn primary" onclick="savePlatform()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Status Quick Edit -->
+
+<div class="modal-overlay" id="modal-item-edit">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" id="ie-title">Edit Item</div>
+      <button class="modal-close" onclick="closeModal('modal-item-edit')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label class="label">Status</label>
+        <select class="input" id="ie-status">
+          <option>In Inventory</option><option>Listed</option><option>Sold</option><option>Scrapped</option>
+        </select>
+      </div>
+      <div class="field"><label class="label">Sale Price ($)</label><input class="input" id="ie-sale" type="number" placeholder="0.00"></div>
+      <div class="field"><label class="label">Platform Fee ($)</label><input class="input" id="ie-fee" type="number" placeholder="0.00"></div>
+      <div class="field"><label class="label">Views</label><input class="input" id="ie-views" type="number"></div>
+      <div class="field"><label class="label">Watchers</label><input class="input" id="ie-watchers" type="number"></div>
+      <div class="field"><label class="label">Notes</label><textarea class="input" id="ie-notes" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn danger" onclick="deleteItem()">Delete</button>
+      <button class="btn" onclick="closeModal('modal-item-edit')">Cancel</button>
+      <button class="btn primary" onclick="saveItemEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const VAULT_KEY = 'mphub_v1';
+const PIN_KEY = 'mphub_pin';
+
+function saveData(){ try{ localStorage.setItem(VAULT_KEY, JSON.stringify({items:S.items,platforms:S.platforms,lots:S.lots})); }catch(e){} }
+function loadData(){
+  try{
+    const d = localStorage.getItem(VAULT_KEY);
+    if(d) return JSON.parse(d);
+  }catch(e){}
+  return null;
+}
+
+function hashPin(p){ let h=0; for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0;} return h.toString(36); }
+
+// ---- LISTING COPY ----
+const LISTINGS = {
+'mp-001':{
+  ebay:{title:`NEW Rosemount 8750W Magnetic Flow Meter 8" Flanged HART 4-20mA 316SS Municipal`,body:`NEW/UNUSED Rosemount 8750W Utility Magnetic Flow Meter — 8" Flanged\nPart# 8750WDMT2A4FTSA080CA1DA1M4G1DWAXQ4\n\nNew, never-installed from municipal water infrastructure surplus. Dual-compartment transmitter housing, loop powered 4-20mA + HART, 316SS electrodes, local display, 90-250VAC.\n\nSpecs: 8" flanged | 4-20mA + HART | 316SS electrodes | Local display | 90-250VAC\n\nNote: Rosemount added a 6.7% surcharge April 2025. Buy surplus and save significantly off new list ($4,500–6,500+).\n\nBuyer responsible for shipping.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🔧 NEW Rosemount 8750W 8" Magnetic Flow Meter — $2,200\n\nNever installed, pulled from municipal water surplus. Commercial-grade mag flow meter with HART protocol, 316SS electrodes, local display. New list $4,500–6,500+ and Rosemount just raised prices 6.7% in April.\n\nFree delivery within ~80 miles (Yakima, The Dalles, Tri-Cities).\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  craigslist:{body:`NEW Rosemount 8750W 8" Mag Flow Meter — $2,200 — South-Central WA\n\nNew, never-installed from municipal surplus. HART protocol, 4-20mA, 316SS electrodes, local display, 90-250VAC. Part# 8750WDMT2A4FTSA080CA1DA1M4G1DWAXQ4.\n\nNew list $4,500–6,500+. Unused, ready to install.\n\n$2,200. Free delivery ~80 miles. Shipping available.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  probrewer:{body:`For Sale: NEW Rosemount 8750W 8" Magnetic Flowmeter — $2,200 | South-Central Washington\n\nNew, unused from municipal water surplus. Dual-compartment transmitter, 4-20mA + HART, 316SS electrodes, 90-250VAC. Part# 8750WDMT2A4FTSA080CA1DA1M4G1DWAXQ4.\n\nNo lead time, no surcharge. Current new list $4,500–6,500+.\n\n$2,200 firm. Free delivery ~80 miles.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Manufacturer: Emerson/Rosemount | Model: 8750W | Part#: 8750WDMT2A4FTSA080CA1DA1M4G1DWAXQ4 | Size: 8" (DN200) | Output: 4-20mA + HART | Electrodes: 316SS | Display: Integral local | Power: 90-250VAC | Condition: New, never installed\n\nMunicipal surplus. Immediate availability. Current new list $4,500–6,500+.\n\n$2,200 USD. South-central WA. Free delivery ~80 miles.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"We've got a commercial-grade water flow meter off a municipal surplus job — brand new, never installed. This thing retails for five grand and we've got it for twenty-two hundred."`},
+  tags:{body:`Rosemount 8750W, magnetic flow meter, mag meter, 8 inch flowmeter, HART flowmeter, utility flow meter, municipal water meter, Emerson flowmeter, surplus instrumentation, 4-20mA flow meter`}
+},
+'mp-002':{
+  ebay:{title:`NEW Grundfos CRN64 10HP Centrifugal Pump Motor CRN64 1-1-A-G-A-E HQQE Municipal`,body:`NEW/UNUSED Grundfos CRN64 10HP Centrifugal Pump with Motor — Model CRN64 1-1-A-G-A-E HQQE-MX2\n\nNew, never-installed from municipal water surplus. 316SS wetted parts, HQQE double mechanical seal (EN/SiC/EPDM), MX2 premium efficiency motor. Continuous duty rated.\n\nSpecs: 10HP | Vertical multistage centrifugal | 316SS wetted parts | HQQE double seal | MX2 premium motor\n\nNew list $4,000–8,000+. No hours, no wear.\n\nHeavy item — contact for dimensions before purchasing.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`💧 NEW Grundfos CRN64 10HP Pump + Motor — $2,800\n\nNever installed, municipal surplus. 316SS wetted parts, double mechanical seal, premium efficiency motor. New list $4,000–8,000+. Zero hours, ready to install.\n\nFree delivery ~80 miles (Yakima, The Dalles, Tri-Cities).\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  craigslist:{body:`NEW Grundfos CRN64 10HP Centrifugal Pump + Motor — $2,800 — South-Central WA\n\nModel CRN64 1-1-A-G-A-E HQQE-MX2. 316SS wetted parts, double mechanical seal, premium efficiency motor. Municipal surplus — zero hours.\n\nNew list $4,000–8,000+. $2,800. Free delivery ~80 miles.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Manufacturer: Grundfos | Model: CRN64 1-1-A-G-A-E HQQE-MX2 | Power: 10HP | Type: Vertical multistage centrifugal | Wetted Parts: 316SS | Shaft Seal: HQQE double mechanical | Motor: MX2 premium | Condition: New, never installed\n\nMunicipal surplus. Zero hours. Immediate availability.\n\n$2,800. South-central WA. Free delivery ~80 miles.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Brand new Grundfos industrial pump — ten horsepower, stainless, double seal, never been run. Worth twice what we're asking if you've got an irrigation setup or know someone in the trades."`},
+  tags:{body:`Grundfos CRN64, centrifugal pump, multistage pump, 10HP pump, stainless pump, water supply pump, pressure booster, industrial pump, municipal surplus, Grundfos CRN`}
+},
+'mp-003':{
+  ebay:{title:`NEW Bray Series 31 16" Butterfly Valve Series 04 Gear Actuator Municipal Surplus`,body:`NEW Bray Series 31 16" Butterfly Valve with Series 04 Gear Actuator\nP/N: Valve 31-1600-13010-375/A052 | Gear 04-0500-21202-002\n\nNew, never-installed from municipal water surplus. Industry standard for water and wastewater isolation.\n\nHeavy item — buyer responsible for freight.\n\n$1,400. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🔩 NEW Bray 16" Butterfly Valve + Gear — $1,400\n\nBrand new municipal surplus. Industry-standard isolation valve. Heavy — local pickup preferred.\n\nSouth-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  craigslist:{body:`NEW Bray 16" Butterfly Valve + Gear — $1,400 — South-Central WA\n\nBray Series 31 16" butterfly valve with Series 04 gear actuator. P/N 31-1600-13010-375/A052. Municipal water surplus. Heavy — local pickup preferred.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Manufacturer: Bray | Series: 31 | Size: 16" | Type: Butterfly Valve | Actuator: Series 04 Manual Gear | Valve P/N: 31-1600-13010-375/A052 | Gear P/N: 04-0500-21202-002 | Condition: New | $1,400 | South-central WA\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Big 16-inch water valve, brand new off a municipal job. If you know anyone doing irrigation infrastructure or pipeline work, this is a significant piece."`},
+  tags:{body:`Bray Series 31, butterfly valve, 16 inch valve, gear actuator, water valve, municipal valve, isolation valve, wastewater valve, waterworks`}
+},
+'mp-004':{
+  ebay:{title:`NEW Bray 6" Butterfly Valve Kinetrol Pneumatic Actuator Stonel Limit Switch Assembly`,body:`NEW Complete Actuated Valve Assembly — Bray Series 31 6" + Kinetrol Model 09 + Stonel Quartz\nP/N: Valve 31-0600-13010-375/A052 | Actuator 097-100 | Switch QX2VE02SRA\n\nNew, never-installed complete actuated assembly from municipal water surplus. Fully integrated — valve, pneumatic actuator, and position feedback limit switch.\n\nKinetrol vane-type actuators offer superior longevity over rack-and-pinion designs. Stonel Quartz provides SCADA/DCS position feedback.\n\n$650. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`⚙️ NEW 6" Actuated Valve Assembly — $650\n\nBray butterfly valve + Kinetrol pneumatic actuator + Stonel limit switch. Complete package, never installed, municipal surplus. Premium Kinetrol vane actuator.\n\nShip or local pickup south-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  craigslist:{body:`NEW Bray 6" Valve + Kinetrol Actuator + Stonel — $650 — South-Central WA\n\nComplete actuated valve assembly. Bray Series 31, Kinetrol Model 09, Stonel Quartz. New/unused municipal surplus.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Valve: Bray Series 31 6" | Actuator: Kinetrol Model 09 (097-100) | Switch: Stonel Quartz (QX2VE02SRA) | Condition: New | Application: Automated process control | $650 | South-central WA\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Automated valve assembly — pneumatic actuator, position switch, the works. Brand new municipal surplus, ready to drop into a control system."`},
+  tags:{body:`Bray butterfly valve, Kinetrol actuator, Stonel limit switch, actuated valve, pneumatic valve, 6 inch valve, process control, SCADA valve`}
+},
+'mp-005':{
+  ebay:{title:`NEW Bray Series 31 4" Butterfly Valve Kinetrol Model 07 Pneumatic Actuator Assembly`,body:`New, never-installed Bray Series 31 4" butterfly valve with Kinetrol Model 07 pneumatic actuator. P/N: Valve 31-0400-13010-375/A052 | Actuator 077-100. Municipal surplus. Kinetrol vane actuators offer superior cycle life.\n\n$450. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`⚙️ NEW Bray 4" Valve + Kinetrol Actuator — $450. Never installed, municipal surplus. Premium Kinetrol vane actuator. Ship or pickup south-central WA. (509) 906-2938`},
+  craigslist:{body:`NEW Bray 4" Valve + Kinetrol Model 07 — $450 — South-Central WA. New/unused. P/N: 31-0400-13010-375/A052 / 077-100. (509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Valve: Bray Series 31 4" | Actuator: Kinetrol Model 07 (077-100) | Condition: New | $450 | South-central WA | (509) 906-2938`},
+  farmers:{body:`"Four-inch pneumatic valve assembly, brand new. Good for automated irrigation or process control work."`},
+  tags:{body:`Bray 4 inch valve, Kinetrol Model 07, pneumatic actuator, butterfly valve, actuated valve, process control, municipal surplus`}
+},
+'mp-006':{
+  ebay:{title:`NEW Bray Series 31 4" Butterfly Valve Series 01 Lever Handle Manual Actuator`,body:`New, never-installed Bray Series 31 4" butterfly valve with Series 01 lever actuator. P/N: 31-0400-13010-375/A052 | Lever 01-0400-21100-007. Municipal surplus. No air supply required.\n\n$280. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🔩 NEW Bray 4" Butterfly Valve + Lever — $280. Manual, no air needed. Brand new municipal surplus. Great for irrigation or small process lines. (509) 906-2938`},
+  craigslist:{body:`NEW Bray 4" Manual Butterfly Valve + Lever — $280 — South-Central WA. No air required. P/N: 31-0400-13010-375/A052. (509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Valve: Bray Series 31 4" | Actuator: Series 01 Lever Manual | Condition: New | $280 | South-central WA | (509) 906-2938`},
+  farmers:{body:`"Simple manual butterfly valve, four-inch, brand new. Lever handle, no air needed — good for irrigation or small water lines."`},
+  tags:{body:`Bray butterfly valve, 4 inch, lever actuator, manual valve, irrigation valve, municipal surplus, shutoff valve`}
+},
+'mp-007':{
+  ebay:{title:`NEW Bray Series 31 3" Butterfly Valve Kinetrol Model 08 Actuator Stonel Limit Switch`,body:`New, never-installed complete actuated assembly. Bray Series 31 3" + Kinetrol Model 08 + Stonel Quartz. P/N: 31-0300-13010-375/A052 / 087-120 / QX2VE02SRA. Municipal surplus.\n\n$420. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`⚙️ NEW 3" Actuated Valve — Bray + Kinetrol + Stonel — $420. Complete assembly, never installed. Municipal surplus. (509) 906-2938`},
+  craigslist:{body:`NEW Bray 3" Valve + Kinetrol + Stonel — $420 — South-Central WA. Complete actuated assembly. Municipal surplus. (509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Valve: Bray Series 31 3" | Actuator: Kinetrol Model 08 (087-120) | Switch: Stonel Quartz (QX2VE02SRA) | Condition: New | $420 | South-central WA | (509) 906-2938`},
+  farmers:{body:`"Three-inch automated valve assembly, brand new municipal surplus."`},
+  tags:{body:`Bray 3 inch valve, Kinetrol Model 08, Stonel limit switch, actuated valve, pneumatic butterfly valve, SCADA`}
+},
+'mp-008':{
+  ebay:{title:`NEW Bray Series 31 2" Butterfly Valve Kinetrol Model 05 Pneumatic Actuator Assembly`,body:`New, never-installed Bray Series 31 2" butterfly valve with Kinetrol Model 05 pneumatic actuator. P/N: 31-0200-13010-375/A052 / 057-100. Municipal surplus.\n\n$320. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`⚙️ NEW Bray 2" Valve + Kinetrol — $320. Never installed, municipal surplus. Ship or pickup. (509) 906-2938`},
+  craigslist:{body:`NEW Bray 2" Valve + Kinetrol Model 05 — $320 — South-Central WA. New/unused. (509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Valve: Bray Series 31 2" | Actuator: Kinetrol Model 05 (057-100) | Condition: New | $320 | South-central WA | (509) 906-2938`},
+  farmers:{body:`"Two-inch automated valve, brand new. Good for small-line process control or irrigation automation."`},
+  tags:{body:`Bray 2 inch valve, Kinetrol Model 05, pneumatic actuator, butterfly valve, municipal surplus`}
+},
+'mp-009':{
+  ebay:{title:`NEW Amiad EBS-15000 300 Micron Strainer Basket Filter Municipal Water Surplus`,body:`New, never-installed Amiad EBS-15000 300 micron strainer basket. Cat: 042008-000043 | P/N: 700101-001065. Global leader in water filtration. Municipal surplus, zero use.\n\n$550. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`💧 NEW Amiad EBS-15000 300 Micron Strainer — $550. Never used, municipal surplus. Top name in irrigation and water filtration. Ship or pickup. (509) 906-2938`},
+  craigslist:{body:`NEW Amiad EBS-15000 300 Micron Strainer — $550 — South-Central WA. New/unused. Cat: 042008-000043. (509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Manufacturer: Amiad | Model: EBS-15000 | Filtration: 300 Micron | P/N: 700101-001065 | Condition: New | $550 | South-central WA | (509) 906-2938`},
+  farmers:{body:`"Industrial water strainer, brand new Amiad — the go-to brand for irrigation filtration. Never been used."`},
+  tags:{body:`Amiad EBS-15000, 300 micron strainer, water filter, irrigation filter, municipal filtration, basket strainer`}
+},
+'mp-010':{
+  ebay:{title:`Flanged Ductile Iron Pipe Fittings Lot 12-16" Spools Reducers C-110 Tyler Municipal`,body:`Lot of flanged ductile iron pipe fittings, 12"-16" range. Spools, reducers, C-110 Tyler 16x14 reducer. Red oxide primer. Municipal water surplus.\n\nHeavy — local pickup preferred, freight at buyer's expense.\n\n$600 for the lot. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🔧 Flanged DI Fittings — Large 12"-16" — $600 lot. Spools, reducers, C-110 Tyler 16x14 reducer. Municipal surplus. Heavy — local pickup preferred. (509) 906-2938`},
+  craigslist:{body:`Flanged DI Pipe Fittings Lot 12"-16" — $600 — South-Central WA. Spools, reducers. Municipal surplus. Local pickup preferred. (509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Big ductile iron pipe fittings, twelve to sixteen inch. Municipal surplus — hard to find cheap if you're doing irrigation infrastructure."`},
+  tags:{body:`ductile iron fittings, flanged pipe, DI reducer, pipe spool, C-110 Tyler, waterworks, municipal pipe, irrigation fittings`}
+},
+'mp-011':{
+  ebay:{title:`Flanged Ductile Iron Pipe Fittings Lot 6-10" Elbows Tees Spools Municipal Surplus`,body:`Lot of flanged ductile iron pipe fittings, 6"-10" range. Elbows, tees, spools, reducers. Red oxide primer. Municipal water surplus.\n\n$350 for the lot. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🔧 Flanged DI Fittings 6"-10" — $350 lot. Elbows, tees, spools, reducers. Municipal surplus. South-central WA. (509) 906-2938`},
+  craigslist:{body:`Flanged DI Fittings 6"-10" Lot — $350 — South-Central WA. Municipal surplus. Bundle with large lot if needed. (509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Six to ten inch flanged pipe fittings, municipal surplus. Good for irrigation or farm water systems."`},
+  tags:{body:`ductile iron fittings, flanged fittings, pipe elbows, pipe tees, waterworks, irrigation, municipal surplus`}
+},
+'mp-012':{
+  ebay:{title:`NEW Crated Ductile Iron Flanged Fittings 2-6" Elbows Tees Reducers Mixed Lot`,body:`Crated lot of mixed ductile iron flanged fittings, 2"-6". Elbows, tees, reducers, spools. New/unused in original crating from municipal surplus.\n\n$280. South-central WA. (509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`📦 NEW Crated DI Fittings 2"-6" Mixed Lot — $280. New/unused in original crating. Municipal surplus. South-central WA. (509) 906-2938`},
+  craigslist:{body:`Crated New DI Fittings 2"-6" — $280 — South-Central WA. New/unused in original crate. (509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Crated small fittings, two to six inch, brand new never used. Good for small water lines or irrigation hookups."`},
+  tags:{body:`crated fittings, new ductile iron, small pipe fittings, flanged fittings, elbows, tees, irrigation, farm water`}
+},
+'mp-013':{
+  ebay:{title:`Apollo SvenMill 6 Electric Roller Mill Brewery Distillery Grain Mill + Spare Motor`,body:`Apollo Machine & Products SvenMill 6 Electric Roller Mill — Good working condition, normal wear.\n\nIncludes:\n- SvenMill 6 with electric motor\n- Spare motor (significant added value)\n- Auger\n\nOffset roller design, instant-release roller mechanism (roll removal ~10 min without pulling bearings). Grooved steel rollers, hopper magnets, heavy welded steel frame.\n\nIdeal for small-to-mid craft brewery, distillery, cidery, or farm feed operation.\n\n$3,400. Free delivery ~80 miles (Yakima, The Dalles, Tri-Cities).\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  facebook:{body:`🍺 Apollo SvenMill 6 Electric Grain Mill — $3,400\n\nGood condition, normal wear. Comes with spare motor and auger — spare motor alone is worth serious money. Commercial two-roll mill used by craft breweries, distilleries, farm operations.\n\nFree delivery ~80 miles (Yakima, The Dalles, Tri-Cities).\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  craigslist:{body:`Apollo SvenMill 6 Electric Grain Mill — $3,400 — South-Central WA\n\nGood working condition, normal wear. Includes spare motor and auger. Commercial two-roll mill for brewery, distillery, or farm feed.\n\nFree delivery ~80 miles. Shipping available.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  probrewer:{body:`Apollo SvenMill 6 Electric Roller Mill | Spare Motor + Auger | $3,400 | South-Central WA\n\nGood working condition with normal wear. Includes spare motor and auger — the spare motor represents significant operational value for a production brewery or distillery.\n\nHeavy welded steel frame, offset roller geometry, instant-release mechanism (~10 min roll removal without bearing/pulley removal). Grooved rollers, hopper magnets.\n\n$3,400 firm. Free delivery ~80 miles. Shipping at buyer's expense.\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  machinio:{body:`Manufacturer: Apollo Machine & Products | Model: SvenMill 6 | Type: Electric Roller/Grain Mill | Condition: Good, normal wear | Includes: Spare motor, auger | Application: Brewery, distillery, farm feed | Price: $3,400 | South-central WA | Free delivery ~80 miles\n\n(509) 906-2938 | muddypawtrading@gmail.com`},
+  farmers:{body:`"Commercial grain mill — breweries and distilleries use these to crush malt. Comes with a spare motor. Priced well below replacement cost."`},
+  tags:{body:`Apollo SvenMill, grain mill, roller mill, malt mill, brewery equipment, distillery, two roll mill, craft brewing, farm feed`}
+}
+};
+
+const PLATFORM_CAT_MAP = {
+  'Industrial/Equipment':['ebay','machinio','craigslist','facebook'],
+  'Brewing/Distilling':['probrewer','ebay','machinio','craigslist','facebook'],
+  'Furniture':['facebook','craigslist','ebay'],
+  'Tools':['ebay','facebook','craigslist'],
+  'Pottery/Art':['facebook','instagram','ebay'],
+  'Produce/Food':['facebook','instagram'],
+  'General Resale':['ebay','facebook','craigslist'],
+  'Other':['ebay','facebook','craigslist']
+};
+
+const PLAT_TAB_LABELS = {
+  ebay:'🛒 eBay', facebook:'📘 Facebook', craigslist:'📋 Craigslist',
+  probrewer:'🍺 ProBrewer', machinio:'⚙️ Machinio', farmers:'🌽 Market', tags:'🏷 Tags'
+};
+
+function genListingCopy(item, platId){
+  const price = item.listPrice ? '$'+Number(item.listPrice).toLocaleString() : 'TBD';
+  const notes = item.notes||'';
+  const delivery = '\n\nFree delivery within ~80 miles (Yakima, The Dalles, Tri-Cities). Shipping available. Local pickup welcome — south-central WA.';
+  const contact = '\n\n(509) 906-2938 | muddypawtrading@gmail.com';
+  switch(platId){
+    case 'ebay': return {title:item.name+' — '+price, body:item.name+' — '+price+'\n\n'+item.category+'. Condition: '+(item.condition||'Good')+'.\n\n'+(notes||'')+delivery+contact};
+    case 'facebook': return {body:'🐾 '+item.name+' — '+price+'\n\nMuddy Paw Trading Co., Goldendale WA.\n\n'+(notes||'')+delivery+contact};
+    case 'craigslist': return {body:item.name+' — '+price+' — South-Central WA\n\n'+(notes||'')+delivery+contact};
+    case 'probrewer': return {body:'For Sale: '+item.name+' — '+price+' | South-Central Washington\n\n'+(notes||'')+delivery+contact};
+    case 'machinio': return {body:item.name+' | '+price+' | South-central WA\n\nCategory: '+item.category+' | Condition: '+(item.condition||'Good')+(notes?'\n\n'+notes:'')+contact};
+    case 'farmers': return {body:'"'+item.name+' — '+price+'. '+( notes||'Good item from our homestead operation.')+'"'};
+    case 'tags': return {body:(item.tags||[item.name, item.category]).join(', ')};
+    default: return {body:item.name+' — '+price+'\n\n'+(notes||'')+contact};
+  }
+}
+
+const DEFAULT_PLATFORMS = [
+  {id:'ebay',name:'eBay',icon:'🛒',url:'https://www.ebay.com/sh/ovw',loginUrl:'https://signin.ebay.com',username:'muddypawtrading',password:'',notes:'Store dashboard. Check Messages daily. ~13% fee on most categories.',color:'#E8A838',active:true},
+  {id:'facebook',name:'Facebook Marketplace',icon:'📘',url:'https://www.facebook.com/marketplace/you/selling',loginUrl:'https://facebook.com',username:'muddypawtrading@gmail.com',password:'',notes:'Use Business Page. Check messages twice daily.',color:'#4a9eff',active:true},
+  {id:'craigslist',name:'Craigslist',icon:'📋',url:'https://accounts.craigslist.org/login/home',loginUrl:'https://accounts.craigslist.org',username:'muddypawtrading@gmail.com',password:'',notes:'Renew listings every 48h.',color:'#a0cfff',active:true},
+  {id:'probrewer',name:'ProBrewer Classifieds',icon:'🍺',url:'https://probrewer.com/classifieds',loginUrl:'https://probrewer.com/login',username:'muddypawtrading',password:'',notes:'Brewing/distilling equipment only.',color:'#c084fc',active:true},
+  {id:'machinio',name:'Machinio',icon:'⚙️',url:'https://machinio.com/dashboard',loginUrl:'https://machinio.com/login',username:'muddypawtrading',password:'',notes:'Industrial equipment — valves, pumps, instrumentation.',color:'#fb923c',active:true},
+  {id:'govdeals',name:'GovDeals',icon:'🏛',url:'https://www.govdeals.com/',loginUrl:'https://www.govdeals.com/login',username:'muddypawtrading@gmail.com',password:'',notes:'SOURCE platform — watch auctions. Set alerts for valves, pumps, surplus.',color:'#4caf79',active:true},
+  {id:'govplanet',name:'GovPlanet',icon:'🌐',url:'https://www.govplanet.com/',loginUrl:'https://www.govplanet.com/login',username:'muddypawtrading@gmail.com',password:'',notes:'SOURCE — heavy equipment surplus.',color:'#4caf79',active:false},
+  {id:'instagram',name:'Instagram',icon:'📸',url:'https://www.instagram.com/muddypawtrading',loginUrl:'https://instagram.com',username:'muddypawtrading',password:'',notes:"Photo brand content. Homestead shots, Kati's pottery. Link → eBay.",color:'#e879a0',active:false},
+];
+
+const today = new Date().toISOString().split('T')[0];
+
+const DEFAULT_ITEMS = [
+  {id:'mp-001',name:'Rosemount 8750W Mag Flow Meter 8"',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:2200,condition:'New/Unused',notes:'HART protocol, 316SS electrodes, 8" flanged, 90-250VAC. Part# 8750WDMT2A4FTSA080CA1DA1M4G1DWAXQ4.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-002',name:'Grundfos CRN64 10HP Centrifugal Pump + Motor',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:2800,condition:'New/Unused',notes:'Model CRN64 1-1-A-G-A-E HQQE-MX2. 316SS wetted parts, double mechanical seal.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-003',name:'Bray 16" Butterfly Valve + Series 04 Gear',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:1400,condition:'New/Unused',notes:'P/N: 31-1600-13010-375/A052. Heavy — note freight.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-004',name:'Bray 6" Valve + Kinetrol Actuator + Stonel',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:650,condition:'New/Unused',notes:'P/N: 31-0600-13010-375/A052 / 097-100 / QX2VE02SRA.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-005',name:'Bray 4" Valve + Kinetrol Model 07',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:450,condition:'New/Unused',notes:'P/N: 31-0400-13010-375/A052 / 077-100.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-006',name:'Bray 4" Valve + Series 01 Lever',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:280,condition:'New/Unused',notes:'Manual operation, no air required.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-007',name:'Bray 3" Valve + Kinetrol Model 08 + Stonel',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:420,condition:'New/Unused',notes:'P/N: 31-0300-13010-375/A052 / 087-120 / QX2VE02SRA.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-008',name:'Bray 2" Valve + Kinetrol Model 05',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:320,condition:'New/Unused',notes:'P/N: 31-0200-13010-375/A052 / 057-100.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-009',name:'Amiad EBS-15000 300 Micron Strainer',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:550,condition:'New/Unused',notes:'Cat: 042008-000043 | P/N: 700101-001065.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-010',name:'Flanged DI Fittings Lot — Large 12"-16"',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:600,condition:'Surplus',notes:'Spools, reducers, C-110 Tyler 16x14 reducer. Heavy — local pickup preferred.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-011',name:'Flanged DI Fittings Lot — Medium 6"-10"',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:350,condition:'Surplus',notes:'Elbows, tees, spools, reducers. Bundle with large lot if buyer wants all.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-012',name:'Crated Small DI Fittings 2"-6" Mixed Lot',category:'Industrial/Equipment',source:'GovDeals - Tri-Cities WA',buyPrice:0,listPrice:280,condition:'New/Unused',notes:'New/unused in original crating.',status:'In Inventory',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+  {id:'mp-013',name:'Apollo SvenMill 6 Electric Roller Mill',category:'Brewing/Distilling',source:'Private acquisition',buyPrice:500,listPrice:3400,condition:'Good — Normal Wear',notes:'Includes spare motor and auger — lead with spare motor as key value-add.',status:'Listed',salePrice:null,platformFee:0,views:0,watchers:0,buyDate:today},
+];
+
+const DEFAULT_LOTS = [{id:'LOT-001',name:'GovDeals Water Infrastructure Lot',source:'GovDeals - Tri-Cities WA',buyPrice:379,tripCost:0,buyDate:today,notes:'Single cost basis — $379 + trip cost. Each sale chips at the total until covered.',itemIds:['mp-001','mp-002','mp-003','mp-004','mp-005','mp-006','mp-007','mp-008','mp-009','mp-010','mp-011','mp-012']}];
+
+const BRAND_COPY = [
+  {label:'Short Bio — eBay / Machinio (160 chars)',text:'Industrial surplus, brewing equipment & farm goods from a 20-acre property in Goldendale, WA. Good stuff, priced honest. Free delivery within ~80 miles.'},
+  {label:'Long Bio — Facebook Page / eBay Store',text:"Muddy Paw Trading Company is a family buy-sell operation based on a 20-acre off-grid homestead in Goldendale, Washington. We source industrial surplus, government auction lots, brewing and distilling equipment, farm tools, and handmade goods — and we grow and make some of it ourselves.\n\nFree delivery within approximately 80 miles of south-central Washington, including Yakima, The Dalles, and the Tri-Cities. Shipping available at buyer's expense. Local pickup always welcome.\n\nIf you see something you want, just reach out — we're real people and we'll treat you right.\n\n(509) 906-2938 · muddypawtrading@gmail.com"},
+  {label:'Email Signature',text:"Keith\nMuddy Paw Trading Company\nGoldendale, WA · South-Central Washington\n(509) 906-2938\nmuddypawtrading@gmail.com\nFound it. Fixed it. Moving on."},
+  {label:'Farmers Market Table Card',text:"🐾 Muddy Paw Trading Company\nGoldendale, WA · (509) 906-2938 · muddypawtrading@gmail.com\n\nFresh eggs · Heirloom vegetables · Kati's handmade pottery · Surplus finds and equipment\n\nDon't see what you need? Ask us — we might have it at home."},
+  {label:'Tagline — Primary',text:'Found it. Fixed it. Moving on.'},
+  {label:'Tagline — Short / Social',text:'🐾 We haul it so you don\'t have to.'},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  items: [...DEFAULT_ITEMS],
+  platforms: [...DEFAULT_PLATFORMS],
+  lots: [...DEFAULT_LOTS],
+  pin: '',
+  currentPanel: 'dashboard',
+  editingPlatId: null,
+  editingItemId: null,
+  activeListingItemId: null,
+  activeListingTab: 'ebay',
+  selectedPlatId: null,
+  showPasswords: {},
+};
+
+// ============================================================
+// PIN LOGIC
+// ============================================================
+let pinBuffer = '';
+
+function keyPress(k){
+  if(k==='back'){ pinBuffer=pinBuffer.slice(0,-1); }
+  else if(pinBuffer.length<4){ pinBuffer+=k; }
+  updateDots();
+  if(pinBuffer.length===4) checkPin();
+}
+
+function updateDots(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('d'+i);
+    d.classList.toggle('filled',i<pinBuffer.length);
+  }
+}
+
+function checkPin(){
+  const stored = localStorage.getItem(PIN_KEY);
+  if(!stored){ showSetPin(); return; }
+  if(hashPin(pinBuffer)===stored){
+    S.pin=pinBuffer;
+    unlock();
+  } else {
+    document.getElementById('pin-error').textContent='Wrong PIN';
+    pinBuffer='';
+    updateDots();
+    setTimeout(()=>document.getElementById('pin-error').textContent='',1500);
+  }
+}
+
+function showSetPin(){
+  document.getElementById('pin-entry').style.display='none';
+  document.getElementById('pin-setup-area').style.display='block';
+}
+
+function showKeypad(){
+  document.getElementById('pin-entry').style.display='block';
+  document.getElementById('pin-setup-area').style.display='none';
+  pinBuffer='';
+  updateDots();
+}
+
+function confirmSetPin(){
+  const p1=document.getElementById('new-pin-1').value;
+  const p2=document.getElementById('new-pin-2').value;
+  const err=document.getElementById('setup-error');
+  if(p1.length!==4||!/^\d{4}$/.test(p1)){err.textContent='Must be 4 digits';return;}
+  if(p1!==p2){err.textContent="PINs don't match";return;}
+  localStorage.setItem(PIN_KEY,hashPin(p1));
+  S.pin=p1;
+  unlock();
+}
+
+function unlock(){
+  const saved=loadData();
+  if(saved){
+    if(saved.items) S.items=saved.items;
+    if(saved.platforms) S.platforms=saved.platforms;
+    if(saved.lots) S.lots=saved.lots;
+  }
+  document.getElementById('pin-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  renderAll();
+}
+
+function lock(){
+  pinBuffer='';
+  updateDots();
+  showKeypad();
+  document.getElementById('pin-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPanel(name, btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  S.currentPanel=name;
+  renderPanel(name);
+}
+
+function renderPanel(name){
+  switch(name){
+    case 'dashboard': renderDashboard(); break;
+    case 'inventory': renderInventory(); break;
+    case 'listings': renderListingBoard(); break;
+    case 'platforms': renderPlatforms(); break;
+    case 'finances': renderFinances(); break;
+    case 'brand': renderBrand(); break;
+  }
+}
+
+function renderAll(){
+  renderDashboard();
+  renderInventory();
+  renderListingBoard();
+  renderPlatforms();
+  renderFinances();
+  renderBrand();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt(v){ if(!v&&v!==0) return '—'; return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function daysSince(d){ if(!d) return 0; return Math.floor((new Date()-new Date(d))/86400000); }
+function statusColor(s){ return {'In Inventory':'#E8A838','Listed':'#4a9eff','Sold':'#4caf79','Scrapped':'#666'}[s]||'#aaa'; }
+function badge(s){ const c=statusColor(s); return `<span class="badge" style="background:${c}18;color:${c};border:1px solid ${c}33">${s}</span>`; }
+function getLot(itemId){ return S.lots.find(l=>l.itemIds&&l.itemIds.includes(itemId)); }
+
+function getItemListings(item){
+  const plats = S.platforms.filter(p=>p.active);
+  const suggested = PLATFORM_CAT_MAP[item.category]||[];
+  return plats.filter(p=>suggested.includes(p.id)||item.platformIds?.includes(p.id));
+}
+
+function getListing(itemId, platId){
+  const pre = LISTINGS[itemId];
+  if(pre && pre[platId]) return pre[platId];
+  const item = S.items.find(i=>i.id===itemId);
+  if(!item) return null;
+  return genListingCopy(item, platId);
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const totalIn = S.lots.reduce((s,l)=>s+Number(l.buyPrice||0)+Number(l.tripCost||0),0)
+    + S.items.filter(i=>!getLot(i.id)).reduce((s,i)=>s+Number(i.buyPrice||0),0);
+  const potential = S.items.filter(i=>i.status!=='Sold'&&i.status!=='Scrapped').reduce((s,i)=>s+Number(i.listPrice||0),0);
+  const recovered = S.items.filter(i=>i.salePrice).reduce((s,i)=>s+Number(i.salePrice||0)-Number(i.platformFee||0),0);
+  const profit = recovered - totalIn;
+
+  document.getElementById('dash-stats').innerHTML = [
+    ['Total Invested', fmt(totalIn), 'gold'],
+    ['Potential', fmt(potential), 'blue'],
+    ['Recovered', fmt(recovered), 'blue'],
+    ['Net P&L', (profit>=0?'+':'')+fmt(profit), 'green'],
+  ].map(([l,v,c])=>`<div class="stat-card ${c}"><div class="stat-lbl">${l}</div><div class="stat-val" style="color:var(--${c==='gold'?'gold':c==='blue'?'blue':'green'})">${v}</div></div>`).join('');
+
+  // Lot bar
+  const lot = S.lots[0];
+  if(lot){
+    const lotItems = S.items.filter(i=>lot.itemIds?.includes(i.id));
+    const lotRecovered = lotItems.filter(i=>i.salePrice).reduce((s,i)=>s+Number(i.salePrice||0),0);
+    const lotIn = Number(lot.buyPrice||0)+Number(lot.tripCost||0);
+    const pct = lotIn>0?Math.min(lotRecovered/lotIn*100,100):0;
+    const profit = lotRecovered-lotIn;
+    document.getElementById('lot-bar-container').innerHTML = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div><div class="card-title">${lot.name}</div><div class="card-meta">${lotItems.filter(i=>i.status==='Sold').length}/${lotItems.length} sold</div></div>
+          <div style="text-align:right;font-family:'DM Mono',monospace;font-size:11px">
+            <div style="color:var(--muted)">In: <span style="color:var(--gold)">${fmt(lotIn)}</span></div>
+            <div style="color:var(--muted)">Recovered: <span style="color:var(--blue)">${fmt(lotRecovered)}</span></div>
+            ${profit>0?`<div style="color:var(--green)">+${fmt(profit)}</div>`:''}
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${profit>0?'var(--green)':'var(--gold)'}"></div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px">${pct.toFixed(0)}% RECOVERED</div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <div class="field" style="margin:0;flex:1"><label class="label" style="margin-bottom:2px">Trip Cost ($)</label>
+          <input class="input" style="padding:5px 8px;font-size:12px" value="${lot.tripCost||0}" onchange="updateTripCost(this.value)" type="number"></div>
+        </div>
+      </div>`;
   }
 
-  // Keyboard shortcut — Cmd/Ctrl + Enter to launch
-  document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') launchHub();
-    if (e.key === 'Escape') {
-      const overlay = document.getElementById('hub-overlay');
-      if (overlay) overlay.remove();
+  // Top items
+  const top = [...S.items].filter(i=>i.status!=='Sold'&&i.status!=='Scrapped').sort((a,b)=>(b.listPrice||0)-(a.listPrice||0)).slice(0,5);
+  document.getElementById('dash-top-items').innerHTML = top.map(item=>`
+    <div class="card" style="cursor:pointer" onclick="openItemEdit('${item.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1"><div class="card-title">${item.name}</div><div class="card-meta">${item.source} · ${daysSince(item.buyDate)}d</div></div>
+        <div style="text-align:right;flex-shrink:0">${badge(item.status)}<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);margin-top:4px">${fmt(item.listPrice)}</div></div>
+      </div>
+    </div>`).join('');
+
+  // Needs attention
+  const attn = S.items.filter(i=>i.status==='In Inventory'&&daysSince(i.buyDate)>7);
+  document.getElementById('dash-attention').innerHTML = attn.length===0
+    ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:16px 0;text-align:center">All good — nothing sitting unattended.</div>`
+    : attn.slice(0,5).map(item=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="card-title" style="font-size:13px">${item.name}</div><div class="card-meta">${daysSince(item.buyDate)} days in inventory — not listed</div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold)">${fmt(item.listPrice)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function updateTripCost(val){
+  S.lots[0].tripCost = Number(val)||0;
+  saveData();
+  renderDashboard();
+  renderFinances();
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+function renderInventory(){
+  const search = (document.getElementById('inv-search')||{}).value||'';
+  const filter = (document.getElementById('inv-filter')||{}).value||'All';
+  const items = S.items.filter(i=>{
+    if(filter!=='All'&&i.status!==filter) return false;
+    if(search&&!i.name.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+  document.getElementById('inv-list').innerHTML = items.length===0
+    ? `<div style="text-align:center;padding:40px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px">No items found.</div>`
+    : items.map(item=>`
+    <div class="card" style="cursor:pointer" onclick="openItemEdit('${item.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div class="card-title">${item.name}</div>
+          <div class="card-meta">${item.source||''} · ${daysSince(item.buyDate)}d in inventory</div>
+          ${item.notes?`<div style="font-family:'Lora',serif;font-style:italic;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">${item.notes.substring(0,80)}${item.notes.length>80?'...':''}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${badge(item.status)}
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);margin-top:4px">${fmt(item.listPrice)}</div>
+          ${item.salePrice?`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green)">Sold: ${fmt(item.salePrice)}</div>`:''}
+          <button class="copy-btn" style="margin-top:6px" onclick="event.stopPropagation();openListing('${item.id}')">📋 Copy</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// LISTING BOARD
+// ============================================================
+function renderListingBoard(){
+  const activePlats = S.platforms.filter(p=>p.active);
+  document.getElementById('listing-board').innerHTML = activePlats.map(plat=>{
+    const suggested = Object.entries(PLATFORM_CAT_MAP).flatMap(([cat,plats])=>plats.includes(plat.id)?S.items.filter(i=>i.category===cat):[]);
+    const platItems = [...new Set(suggested.map(i=>i.id))].map(id=>S.items.find(i=>i.id===id)).filter(Boolean);
+    return `
+    <div class="board-col">
+      <div class="board-col-header">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${plat.icon}</span><div class="board-col-title">${plat.name}</div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">${platItems.filter(i=>i.status==='Listed').length} live</div>
+      </div>
+      <div class="board-col-body">
+        ${platItems.length===0?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:center;padding:10px 0">No items</div>`
+        :platItems.map(item=>`
+          <div class="board-item">
+            <div class="board-item-name">${item.name}</div>
+            <div class="board-item-controls">
+              <select class="status-select" style="color:${statusColor(item.status)};border-color:${statusColor(item.status)}33" onchange="updateItemStatus('${item.id}',this.value)">
+                ${['In Inventory','Listed','Sold','Scrapped'].map(s=>`<option value="${s}" ${item.status===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+              <button class="copy-btn" onclick="openListing('${item.id}','${plat.id}')">COPY</button>
+            </div>
+          </div>`).join('')}
+        <a class="plat-open-btn" href="${plat.loginUrl}" target="_blank">OPEN ${plat.name.toUpperCase()}</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateItemStatus(itemId, status){
+  const item = S.items.find(i=>i.id===itemId);
+  if(item){ item.status=status; saveData(); renderDashboard(); }
+}
+
+// ============================================================
+// LISTING MODAL
+// ============================================================
+function openListing(itemId, defaultPlatId){
+  const item = S.items.find(i=>i.id===itemId);
+  if(!item) return;
+  S.activeListingItemId = itemId;
+
+  const preListing = LISTINGS[itemId];
+  const platIds = preListing ? Object.keys(preListing) : (PLATFORM_CAT_MAP[item.category]||['ebay']);
+
+  S.activeListingTab = defaultPlatId || platIds[0] || 'ebay';
+
+  document.getElementById('listing-modal-title').textContent = 'Listing Pack';
+  document.getElementById('listing-modal-sub').textContent = item.name;
+
+  const tabs = document.getElementById('listing-tabs');
+  tabs.innerHTML = platIds.map(pid=>`
+    <button class="plat-tab ${pid===S.activeListingTab?'active':''}" onclick="switchListingTab('${pid}')">${PLAT_TAB_LABELS[pid]||pid}</button>
+  `).join('');
+
+  renderListingBody();
+  openModal('modal-listing');
+}
+
+function switchListingTab(platId){
+  S.activeListingTab = platId;
+  document.querySelectorAll('.plat-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.plat-tab').forEach(t=>{ if(t.textContent.includes(platId)||t.onclick.toString().includes(platId)) t.classList.add('active'); });
+  // Simpler approach
+  document.getElementById('listing-tabs').innerHTML = document.getElementById('listing-tabs').innerHTML;
+  const preListing = LISTINGS[S.activeListingItemId];
+  const platIds = preListing ? Object.keys(preListing) : [];
+  document.getElementById('listing-tabs').innerHTML = platIds.map(pid=>`
+    <button class="plat-tab ${pid===platId?'active':''}" onclick="switchListingTab('${pid}')">${PLAT_TAB_LABELS[pid]||pid}</button>
+  `).join('');
+  renderListingBody();
+}
+
+function renderListingBody(){
+  const listing = getListing(S.activeListingItemId, S.activeListingTab);
+  if(!listing){ document.getElementById('listing-body').innerHTML=`<div style="color:var(--muted);text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:10px">No copy for this platform.</div>`; return; }
+
+  let html = '';
+  if(listing.title){
+    html += `<div class="copy-area"><div class="copy-area-label">Title</div><div class="copy-area-text" style="font-family:'Playfair Display',serif;font-weight:700;font-size:14px;color:var(--gold-pale)">${listing.title}</div><button class="copy-btn" onclick="copyText(\`${listing.title.replace(/`/g,"'")}\`,'title-btn')">COPY</button></div>`;
+  }
+  if(listing.body){
+    html += `<div class="copy-area"><div class="copy-area-label">${S.activeListingTab==='tags'?'Search Keywords':S.activeListingTab==='farmers'?'Spoken Pitch':'Post Copy'}</div><div class="copy-area-text">${listing.body.replace(/\n/g,'<br>')}</div><button class="copy-btn" onclick="copyText(\`${listing.body.replace(/`/g,"'").replace(/\n/g,'\\n')}\`,'body-btn')">COPY</button></div>`;
+  }
+  document.getElementById('listing-body').innerHTML = html || '<div style="color:var(--muted);padding:20px;text-align:center;font-family:DM Mono,monospace;font-size:10px">No content for this tab.</div>';
+  document.getElementById('listing-copy-btn').textContent = 'Copy ' + (PLAT_TAB_LABELS[S.activeListingTab]||S.activeListingTab) + ' Listing';
+}
+
+function copyActiveListing(){
+  const listing = getListing(S.activeListingItemId, S.activeListingTab);
+  if(!listing) return;
+  const text = (listing.title?listing.title+'\n\n':'')+( listing.body||'');
+  copyText(text,'listing-copy-btn');
+}
+
+function copyText(text, btnId){
+  navigator.clipboard.writeText(text).then(()=>{
+    if(btnId){
+      const btns = document.querySelectorAll('.copy-btn, .btn');
+      // Just show feedback via title
     }
   });
+  // Show feedback
+  const allCopyBtns = document.querySelectorAll('.copy-btn');
+  // Flash the button that was clicked - handled inline
+}
+
+// ============================================================
+// PLATFORMS
+// ============================================================
+function renderPlatforms(){
+  const active = S.platforms.filter(p=>p.active);
+  const inactive = S.platforms.filter(p=>!p.active);
+
+  let html = '';
+  if(active.length){
+    html += `<div class="section-label">Active (${active.length})</div>`;
+    html += active.map(p=>platCard(p)).join('');
+  }
+  if(inactive.length){
+    html += `<div class="section-label" style="margin-top:16px">Inactive</div>`;
+    html += inactive.map(p=>platCard(p)).join('');
+  }
+  document.getElementById('plat-list').innerHTML = html;
+
+  if(S.selectedPlatId){
+    renderPlatDetail(S.selectedPlatId);
+  } else {
+    document.getElementById('plat-detail-area').innerHTML='';
+  }
+}
+
+function platCard(p){
+  const listed = S.items.filter(i=>{
+    const suggested = PLATFORM_CAT_MAP;
+    return Object.entries(suggested).some(([cat,plats])=>plats.includes(p.id)&&i.category===cat&&i.status==='Listed');
+  }).length;
+  return `
+    <div class="card plat-card ${S.selectedPlatId===p.id?'selected':''}" onclick="selectPlat('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">${p.icon}</span>
+          <div>
+            <div class="card-title">${p.name}</div>
+            <div class="card-meta">${p.username||'—'}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:${p.active?'var(--green)':'var(--muted)'}">${p.active?'● ACTIVE':'○ INACTIVE'}</div>
+          ${listed>0?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--blue)">${listed} listed</div>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectPlat(id){
+  S.selectedPlatId = S.selectedPlatId===id?null:id;
+  renderPlatforms();
+}
+
+function renderPlatDetail(id){
+  const p = S.platforms.find(pl=>pl.id===id);
+  if(!p){document.getElementById('plat-detail-area').innerHTML='';return;}
+  const show = S.showPasswords[id]||false;
+
+  document.getElementById('plat-detail-area').innerHTML = `
+    <div class="plat-detail">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:20px">${p.icon}</span><div style="font-family:'Playfair Display',serif;font-weight:800;font-size:16px;color:var(--gold-pale)">${p.name}</div></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn" style="padding:4px 10px;font-size:9px" onclick="toggleShowPass('${id}')">${show?'HIDE':'SHOW'}</button>
+          <button class="btn" style="padding:4px 10px;font-size:9px" onclick="openEditPlatform('${id}')">EDIT</button>
+        </div>
+      </div>
+      <div class="cred-row"><div><div class="cred-label">Username</div><div class="cred-val">${p.username||'—'}</div></div>${p.username?`<button class="copy-btn" onclick="copyText('${p.username}')">COPY</button>`:''}</div>
+      <div class="cred-row"><div><div class="cred-label">Password</div><div class="cred-val">${p.password?(show?p.password:'••••••••'):'—'}</div></div>${p.password?`<button class="copy-btn" onclick="copyText('${p.password}')">COPY</button>`:''}</div>
+      <div class="cred-row"><div><div class="cred-label">URL</div><div class="cred-val" style="font-size:10px;word-break:break-all">${p.url||'—'}</div></div>${p.url?`<button class="copy-btn" onclick="copyText('${p.url}')">COPY</button>`:''}</div>
+      ${p.notes?`<div style="background:var(--faint);border:1px solid var(--border);border-radius:7px;padding:10px;margin-top:10px"><div class="cred-label">Notes</div><div style="font-family:'Lora',serif;font-size:12px;color:var(--cream);line-height:1.6">${p.notes}</div></div>`:''}
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <a href="${p.loginUrl}" target="_blank" class="btn primary" style="flex:1;text-align:center;text-decoration:none;display:block;padding:8px">OPEN ${p.name.toUpperCase()}</a>
+      </div>
+    </div>`;
+}
+
+function toggleShowPass(id){
+  S.showPasswords[id]=!S.showPasswords[id];
+  renderPlatDetail(id);
+}
+
+function openAddPlatform(){
+  S.editingPlatId = null;
+  document.getElementById('plat-edit-title').textContent='Add Platform';
+  document.getElementById('pe-name').value='';
+  document.getElementById('pe-icon').value='🔹';
+  document.getElementById('pe-user').value='muddypawtrading';
+  document.getElementById('pe-pass').value='';
+  document.getElementById('pe-url').value='';
+  document.getElementById('pe-login').value='';
+  document.getElementById('pe-notes').value='';
+  document.getElementById('pe-active').checked=true;
+  document.getElementById('pe-delete').style.display='none';
+  openModal('modal-plat-edit');
+}
+
+function openEditPlatform(id){
+  S.editingPlatId=id;
+  const p=S.platforms.find(pl=>pl.id===id);
+  if(!p) return;
+  document.getElementById('plat-edit-title').textContent='Edit Platform';
+  document.getElementById('pe-name').value=p.name;
+  document.getElementById('pe-icon').value=p.icon;
+  document.getElementById('pe-user').value=p.username||'';
+  document.getElementById('pe-pass').value=p.password||'';
+  document.getElementById('pe-url').value=p.url||'';
+  document.getElementById('pe-login').value=p.loginUrl||'';
+  document.getElementById('pe-notes').value=p.notes||'';
+  document.getElementById('pe-active').checked=p.active!==false;
+  document.getElementById('pe-delete').style.display='';
+  openModal('modal-plat-edit');
+}
+
+function savePlatform(){
+  const name=document.getElementById('pe-name').value;
+  if(!name.trim()) return;
+  if(S.editingPlatId){
+    const idx=S.platforms.findIndex(p=>p.id===S.editingPlatId);
+    if(idx>-1) S.platforms[idx]={...S.platforms[idx],name,icon:document.getElementById('pe-icon').value,username:document.getElementById('pe-user').value,password:document.getElementById('pe-pass').value,url:document.getElementById('pe-url').value,loginUrl:document.getElementById('pe-login').value,notes:document.getElementById('pe-notes').value,active:document.getElementById('pe-active').checked};
+  } else {
+    S.platforms.push({id:'plat-'+Date.now(),name,icon:document.getElementById('pe-icon').value,username:document.getElementById('pe-user').value,password:document.getElementById('pe-pass').value,url:document.getElementById('pe-url').value,loginUrl:document.getElementById('pe-login').value,notes:document.getElementById('pe-notes').value,active:document.getElementById('pe-active').checked,color:'#C8922A'});
+  }
+  saveData();
+  closeModal('modal-plat-edit');
+  renderPlatforms();
+}
+
+function deletePlatform(){
+  if(!S.editingPlatId||!confirm('Delete this platform?')) return;
+  S.platforms=S.platforms.filter(p=>p.id!==S.editingPlatId);
+  S.selectedPlatId=null;
+  saveData();
+  closeModal('modal-plat-edit');
+  renderPlatforms();
+}
+
+// ============================================================
+// ITEM EDIT
+// ============================================================
+function openItemEdit(id){
+  S.editingItemId=id;
+  const item=S.items.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('ie-title').textContent=item.name;
+  document.getElementById('ie-status').value=item.status;
+  document.getElementById('ie-sale').value=item.salePrice||'';
+  document.getElementById('ie-fee').value=item.platformFee||'';
+  document.getElementById('ie-views').value=item.views||0;
+  document.getElementById('ie-watchers').value=item.watchers||0;
+  document.getElementById('ie-notes').value=item.notes||'';
+  openModal('modal-item-edit');
+}
+
+function saveItemEdit(){
+  const item=S.items.find(i=>i.id===S.editingItemId);
+  if(!item) return;
+  item.status=document.getElementById('ie-status').value;
+  item.salePrice=Number(document.getElementById('ie-sale').value)||null;
+  item.platformFee=Number(document.getElementById('ie-fee').value)||0;
+  item.views=Number(document.getElementById('ie-views').value)||0;
+  item.watchers=Number(document.getElementById('ie-watchers').value)||0;
+  item.notes=document.getElementById('ie-notes').value;
+  saveData();
+  closeModal('modal-item-edit');
+  renderAll();
+}
+
+function deleteItem(){
+  if(!S.editingItemId||!confirm('Delete this item?')) return;
+  S.items=S.items.filter(i=>i.id!==S.editingItemId);
+  saveData();
+  closeModal('modal-item-edit');
+  renderAll();
+}
+
+// ============================================================
+// ADD ITEM
+// ============================================================
+function openAddItem(){
+  document.getElementById('ai-name').value='';
+  document.getElementById('ai-cat').value='Industrial/Equipment';
+  document.getElementById('ai-cond').value='New/Unused';
+  document.getElementById('ai-buy').value='';
+  document.getElementById('ai-list').value='';
+  document.getElementById('ai-source').value='';
+  document.getElementById('ai-notes').value='';
+  updateSuggestedPlats();
+  openModal('modal-add-item');
+}
+
+function updateSuggestedPlats(){
+  const cat=document.getElementById('ai-cat').value;
+  const suggested=PLATFORM_CAT_MAP[cat]||[];
+  const active=S.platforms.filter(p=>p.active);
+  document.getElementById('plat-check-grid').innerHTML=active.map(p=>`
+    <div class="plat-check ${suggested.includes(p.id)?'checked':''}" id="pc-${p.id}" onclick="togglePlatCheck('${p.id}')">
+      <div class="plat-check-box">${suggested.includes(p.id)?'<span style="color:#1a0a00;font-size:10px;font-weight:700">✓</span>':''}</div>
+      <span style="font-size:13px">${p.icon}</span>
+      <div><div class="plat-check-name">${p.name}</div>${suggested.includes(p.id)?`<div class="suggested-tag">★ SUGGESTED</div>`:''}</div>
+    </div>`).join('');
+}
+
+function togglePlatCheck(id){
+  const el=document.getElementById('pc-'+id);
+  el.classList.toggle('checked');
+  const box=el.querySelector('.plat-check-box');
+  if(el.classList.contains('checked')){ box.innerHTML='<span style="color:#1a0a00;font-size:10px;font-weight:700">✓</span>'; }
+  else { box.innerHTML=''; }
+  updateAddBtn();
+}
+
+function checkAllPlats(check){
+  S.platforms.filter(p=>p.active).forEach(p=>{
+    const el=document.getElementById('pc-'+p.id);
+    if(!el) return;
+    if(check){ el.classList.add('checked'); el.querySelector('.plat-check-box').innerHTML='<span style="color:#1a0a00;font-size:10px;font-weight:700">✓</span>'; }
+    else { el.classList.remove('checked'); el.querySelector('.plat-check-box').innerHTML=''; }
+  });
+  updateAddBtn();
+}
+
+function updateAddBtn(){
+  const checked=document.querySelectorAll('.plat-check.checked').length;
+  document.getElementById('ai-submit').textContent=`Add to ${checked} Platform${checked!==1?'s':''}`;
+}
+
+function submitAddItem(){
+  const name=document.getElementById('ai-name').value.trim();
+  if(!name) return;
+  const checked=[...document.querySelectorAll('.plat-check.checked')].map(el=>el.id.replace('pc-',''));
+  const newItem={
+    id:'mp-'+Date.now().toString(36),
+    name,
+    category:document.getElementById('ai-cat').value,
+    condition:document.getElementById('ai-cond').value,
+    buyPrice:Number(document.getElementById('ai-buy').value)||0,
+    listPrice:Number(document.getElementById('ai-list').value)||0,
+    source:document.getElementById('ai-source').value,
+    notes:document.getElementById('ai-notes').value,
+    status:'In Inventory',
+    salePrice:null,
+    platformFee:0,
+    views:0,
+    watchers:0,
+    buyDate:new Date().toISOString().split('T')[0],
+    platformIds:checked,
+  };
+  S.items.push(newItem);
+  saveData();
+  closeModal('modal-add-item');
+  renderAll();
+}
+
+// ============================================================
+// FINANCES
+// ============================================================
+function renderFinances(){
+  const totalIn = S.lots.reduce((s,l)=>s+Number(l.buyPrice||0)+Number(l.tripCost||0),0)
+    + S.items.filter(i=>!getLot(i.id)).reduce((s,i)=>s+Number(i.buyPrice||0),0);
+  const recovered = S.items.filter(i=>i.salePrice).reduce((s,i)=>s+Number(i.salePrice||0)-Number(i.platformFee||0),0);
+  const profit = recovered-totalIn;
+  const potential = S.items.filter(i=>i.status!=='Sold'&&i.status!=='Scrapped').reduce((s,i)=>s+Number(i.listPrice||0),0);
+
+  document.getElementById('fin-stats').innerHTML=[
+    ['Total Invested',fmt(totalIn),'gold'],
+    ['Potential',fmt(potential),'blue'],
+    ['Recovered',fmt(recovered),'blue'],
+    ['Net P&L',(profit>=0?'+':'')+fmt(profit),'green'],
+  ].map(([l,v,c])=>`<div class="stat-card ${c}"><div class="stat-lbl">${l}</div><div class="stat-val" style="color:var(--${c==='gold'?'gold':c==='blue'?'blue':'green'})">${v}</div></div>`).join('');
+
+  document.getElementById('fin-lots').innerHTML=S.lots.map(lot=>{
+    const lotItems=S.items.filter(i=>lot.itemIds?.includes(i.id));
+    const lotRec=lotItems.filter(i=>i.salePrice).reduce((s,i)=>s+Number(i.salePrice||0),0);
+    const lotIn=Number(lot.buyPrice||0)+Number(lot.tripCost||0);
+    const lotP=lotRec-lotIn;
+    return `<tr><td>${lot.name}</td><td>${fmt(lot.buyPrice)}</td><td>${fmt(lot.tripCost||0)}</td><td>${fmt(lotIn)}</td><td>${fmt(lotRec)}</td><td style="color:${lotP>=0?'var(--green)':'#e05252'}">${lotP>=0?'+':''}${fmt(lotP)}</td></tr>`;
+  }).join('');
+
+  document.getElementById('fin-items').innerHTML=S.items.map(item=>{
+    const profit=item.salePrice?(Number(item.salePrice||0)-Number(item.platformFee||0)-Number(item.buyPrice||0)):null;
+    return `<tr><td>${item.name.substring(0,30)}${item.name.length>30?'...':''}</td><td>${fmt(item.buyPrice||0)}</td><td>${fmt(item.listPrice)}</td><td>${fmt(item.salePrice)}</td><td style="color:${profit===null?'var(--muted)':profit>=0?'var(--green)':'#e05252'}">${profit===null?'—':(profit>=0?'+':'')+fmt(profit)}</td><td style="font-family:'DM Mono',monospace;font-size:10px">${daysSince(item.buyDate)}d</td></tr>`;
+  }).join('');
+}
+
+// ============================================================
+// BRAND
+// ============================================================
+function renderBrand(){
+  document.getElementById('brand-copy-blocks').innerHTML=BRAND_COPY.map((b,i)=>`
+    <div class="copy-block-brand">
+      <div class="copy-block-label">${b.label}</div>
+      <div class="copy-block-text">${b.text.replace(/\n/g,'<br>')}</div>
+      <button class="copy-btn" onclick="copyBrand(${i},this)">COPY</button>
+    </div>`).join('');
+}
+
+function copyBrand(i, btn){
+  navigator.clipboard.writeText(BRAND_COPY[i].text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✓ Copied';
+    setTimeout(()=>btn.textContent=orig,1500);
+  });
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modal on overlay tap
+document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click',function(e){
+    if(e.target===this) this.classList.remove('open');
+  });
+});
+
+// ============================================================
+// COPY
+// ============================================================
+function copyText(text, label){
+  navigator.clipboard.writeText(text).then(()=>{
+    // Brief visual feedback
+    const notification = document.createElement('div');
+    notification.textContent = '✓ Copied';
+    notification.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(76,175,121,0.9);color:#fff;padding:8px 20px;border-radius:20px;font-family:DM Mono,monospace;font-size:11px;letter-spacing:1px;z-index:9999;animation:fadeUp 0.2s ease';
+    document.body.appendChild(notification);
+    setTimeout(()=>notification.remove(),1500);
+  }).catch(()=>{
+    // Fallback
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Check if PIN exists
+if(!localStorage.getItem(PIN_KEY)){
+  showSetPin();
+}
+
+// Auto-save every 30 seconds
+setInterval(()=>{ if(S.pin) saveData(); },30000);
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
 </script>
 
-<style>
-  @keyframes overlayIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  @keyframes overlayOut {
-    from { opacity: 1; transform: scale(1); }
-    to   { opacity: 0; transform: scale(0.98); }
-  }
-</style>
 </body>
 </html>
